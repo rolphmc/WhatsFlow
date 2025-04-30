@@ -363,7 +363,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         qrCodeContainer.innerHTML = `
             <div class="spinner-border" role="status">
-                <span class="visually-hidden">Loading...</span>
+                <span class="visually-hidden">Carregando...</span>
             </div>
             <p>Carregando QR code...</p>
         `;
@@ -377,7 +377,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     qrCodeContainer.innerHTML = `
                         <div class="alert alert-warning">
-                            No QR code available for this session.
+                            Nenhum QR code disponível para esta sessão.
                         </div>
                     `;
                 }
@@ -386,7 +386,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Error fetching QR code:', error);
                 qrCodeContainer.innerHTML = `
                     <div class="alert alert-danger">
-                        Error loading QR code: ${error.message || 'Unknown error'}
+                        Erro ao carregar QR code: ${error.message || 'Erro desconhecido'}
                     </div>
                 `;
             });
@@ -396,7 +396,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function displayQRCode(qrCodeData) {
         qrCodeContainer.innerHTML = `
             <img src="${qrCodeData}" alt="WhatsApp QR Code" class="img-fluid">
-            <p class="mt-2">Scan with your WhatsApp mobile app</p>
+            <p class="mt-2">Escaneie com seu aplicativo WhatsApp no celular</p>
         `;
     }
     
@@ -459,7 +459,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (session.status === 'qr_code_ready' && session.qr_code) {
                     qrCodeContainer.innerHTML = `
                         <img src="${session.qr_code}" alt="WhatsApp QR Code" class="img-fluid">
-                        <p class="mt-2">Scan with your WhatsApp mobile app</p>
+                        <p class="mt-2">Escaneie com seu aplicativo WhatsApp no celular</p>
                     `;
                     qrCodeModal.show();
                     
@@ -478,7 +478,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     
                     qrCodeModal.hide();
-                    showToast('WhatsApp session connected successfully', 'success');
+                    showToast('Sessão do WhatsApp conectada com sucesso', 'success');
                     loadSessions();
                 }
             })
