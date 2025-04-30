@@ -22,8 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadWebhooks();
     loadSessions();
     
-    // Load API endpoints
-    loadApiEndpoints();
+    // API endpoints have been moved to sessions page
     
     // Create webhook event
     createWebhookBtn.addEventListener('click', createWebhook);
