@@ -407,6 +407,11 @@ document.addEventListener('DOMContentLoaded', function() {
             events.push(checkbox.value);
         });
         
+        // Adicionar include_headers se o checkbox estiver selecionado
+        if (document.getElementById('prop-headers') && document.getElementById('prop-headers').checked) {
+            events.push('include_headers');
+        }
+        
         // Validate required fields
         if (!name || !sessionId || !url) {
             showToast('Name, Session, and URL are required', 'danger');
@@ -458,6 +463,11 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('input[id^="edit-prop-"]:checked').forEach(checkbox => {
             events.push(checkbox.value);
         });
+        
+        // Adicionar include_headers se o checkbox estiver selecionado
+        if (document.getElementById('edit-prop-headers') && document.getElementById('edit-prop-headers').checked) {
+            events.push('include_headers');
+        }
         
         // Validate required fields
         if (!name || !sessionId || !url) {
