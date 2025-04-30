@@ -205,24 +205,31 @@ document.addEventListener('DOMContentLoaded', function() {
                     </td>
                     <td>${formatDate(session.created_at)}</td>
                     <td class="action-buttons">
-                        ${session.status === 'qr_code_ready' ? 
-                            `<button class="btn btn-sm btn-info show-qr-btn" data-session-id="${session.id}">
-                                <i class="fas fa-qrcode"></i> QR Code
-                            </button>` : ''}
-                        ${session.status === 'disconnected' ? 
-                            `<button class="btn btn-sm btn-success restart-session-btn" data-session-id="${session.id}">
-                                <i class="fas fa-play"></i> Iniciar
-                            </button>` : ''}
-                        ${session.status === 'connected' ? 
-                            `<button class="btn btn-sm btn-warning restart-session-btn" data-session-id="${session.id}">
-                                <i class="fas fa-sync"></i> Reiniciar
-                            </button>` : ''}
-                        <button class="btn btn-sm btn-primary edit-session-btn" data-session-id="${session.id}" data-session-name="${session.name}" data-session-description="${session.description || ''}">
-                            <i class="fas fa-edit"></i> Editar
-                        </button>
-                        <button class="btn btn-sm btn-danger delete-session-btn" data-session-id="${session.id}" data-session-name="${session.name}">
-                            <i class="fas fa-trash"></i> Excluir
-                        </button>
+                        <div class="d-flex flex-wrap gap-1">
+                            ${session.status === 'qr_code_ready' ? 
+                                `<button class="btn btn-sm btn-info show-qr-btn" data-session-id="${session.id}" data-bs-toggle="tooltip" title="Ver QR Code">
+                                    <i class="fas fa-qrcode"></i><span class="d-none d-md-inline"> QR Code</span>
+                                </button>` : ''}
+                            ${session.status === 'disconnected' ? 
+                                `<button class="btn btn-sm btn-success restart-session-btn" data-session-id="${session.id}" data-bs-toggle="tooltip" title="Iniciar sessão">
+                                    <i class="fas fa-play"></i><span class="d-none d-md-inline"> Iniciar</span>
+                                </button>` : ''}
+                            ${session.status === 'connected' ? 
+                                `<button class="btn btn-sm btn-warning restart-session-btn" data-session-id="${session.id}" data-bs-toggle="tooltip" title="Reiniciar sessão">
+                                    <i class="fas fa-sync"></i><span class="d-none d-md-inline"> Reiniciar</span>
+                                </button>` : ''}
+                            <button class="btn btn-sm btn-primary edit-session-btn" data-session-id="${session.id}" 
+                                data-session-name="${session.name}" 
+                                data-session-description="${session.description || ''}"
+                                data-bs-toggle="tooltip" title="Editar sessão">
+                                <i class="fas fa-edit"></i><span class="d-none d-md-inline"> Editar</span>
+                            </button>
+                            <button class="btn btn-sm btn-danger delete-session-btn" data-session-id="${session.id}" 
+                                data-session-name="${session.name}"
+                                data-bs-toggle="tooltip" title="Excluir sessão">
+                                <i class="fas fa-trash"></i><span class="d-none d-md-inline"> Excluir</span>
+                            </button>
+                        </div>
                     </td>
                 </tr>
             `;

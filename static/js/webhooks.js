@@ -304,12 +304,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </div>
                             </td>
                             <td class="action-buttons">
-                                <button class="btn btn-sm btn-primary edit-webhook-btn" data-webhook-id="${webhook.id}">
-                                    <i class="fas fa-edit"></i> Edit
-                                </button>
-                                <button class="btn btn-sm btn-danger delete-webhook-btn" data-webhook-id="${webhook.id}" data-webhook-name="${webhook.name}">
-                                    <i class="fas fa-trash"></i> Delete
-                                </button>
+                                <div class="d-flex flex-wrap gap-1">
+                                    <button class="btn btn-sm btn-primary edit-webhook-btn" data-webhook-id="${webhook.id}" data-bs-toggle="tooltip" title="Editar webhook">
+                                        <i class="fas fa-edit"></i><span class="d-none d-md-inline"> Editar</span>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger delete-webhook-btn" data-webhook-id="${webhook.id}" data-webhook-name="${webhook.name}" data-bs-toggle="tooltip" title="Excluir webhook">
+                                        <i class="fas fa-trash"></i><span class="d-none d-md-inline"> Excluir</span>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     `;
