@@ -355,6 +355,11 @@ document.addEventListener('DOMContentLoaded', function() {
             events.push(checkbox.value);
         });
         
+        // Collect selected message properties
+        document.querySelectorAll('input[id^="prop-"]:checked').forEach(checkbox => {
+            events.push(checkbox.value);
+        });
+        
         // Validate required fields
         if (!name || !sessionId || !url) {
             showToast('Name, Session, and URL are required', 'danger');
@@ -399,6 +404,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // Collect selected events
         const events = [];
         document.querySelectorAll('input[id^="edit-event-"]:checked').forEach(checkbox => {
+            events.push(checkbox.value);
+        });
+        
+        // Collect selected message properties
+        document.querySelectorAll('input[id^="edit-prop-"]:checked').forEach(checkbox => {
             events.push(checkbox.value);
         });
         
@@ -490,6 +500,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Set the events
                 document.querySelectorAll('input[id^="edit-event-"]').forEach(checkbox => {
+                    checkbox.checked = webhook.events.includes(checkbox.value);
+                });
+                
+                // Set the message properties
+                document.querySelectorAll('input[id^="edit-prop-"]').forEach(checkbox => {
                     checkbox.checked = webhook.events.includes(checkbox.value);
                 });
                 
