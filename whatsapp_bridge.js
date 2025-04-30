@@ -77,14 +77,13 @@ async function sendWebhookEvent(eventType, data) {
         
         for (const webhook of webhooks) {
             try {
-                // Clone the original data to avoid modifying it between webhooks
-                const processedData = {...data};
+                // Propriedades básicas que sempre devem estar presentes
+                let basicData = {};
                 
-                // Check if this event is a message event type with potential message properties selected
+                // Se for um dos eventos de mensagem, incluir apenas os campos selecionados
                 if (eventType === 'message' || eventType === 'message_create' || eventType === 'message_ack') {
                     // Check if the original message object is available in the context
-                    // This applies to places where we're handling a raw message object
-                    const messageObj = data._messageObj || data.message || null;
+                    const messageObj = data._messageObj || data.message || data;
                     
                     // Process additional message properties based on webhook configuration
                     if (messageObj && typeof messageObj === 'object') {
@@ -116,13 +115,16 @@ async function sendWebhookEvent(eventType, data) {
                             'msg_links': 'links'
                         };
                         
-                        // Add any selected properties to the processed data
+                        // Add only selected properties to the processed data
                         for (const [eventProp, msgProp] of Object.entries(propMapping)) {
                             if (webhook.events.includes(eventProp) && messageObj[msgProp] !== undefined) {
-                                processedData[msgProp] = messageObj[msgProp];
+                                basicData[msgProp] = messageObj[msgProp];
                             }
                         }
                     }
+                } else {
+                    // Para outros tipos de eventos, manter o payload original
+                    basicData = {...data};
                 }
                 
                 // Prepare the event payload with processed data
@@ -130,8 +132,18 @@ async function sendWebhookEvent(eventType, data) {
                     event: eventType,
                     sessionId: parseInt(sessionId),
                     timestamp: new Date().toISOString(),
-                    data: processedData
+                    data: basicData
                 };
+                
+                // Adicionar cabeçalhos da requisição se a opção estiver selecionada
+                if (webhook.events.includes('include_headers')) {
+                    payload.headers = {
+                        'host': webhook.url.split('/')[2],
+                        'user-agent': 'axios/1.9.0',
+                        'content-type': 'application/json',
+                        'accept': 'application/json, text/plain, */*'
+                    };
+                }
                 
                 const headers = webhook.headers || {};
                 await axios.post(webhook.url, payload, { headers });
