@@ -581,5 +581,18 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.show();
     }
     
-
+    // Função para configurar as propriedades padrão do formulário de criação de webhook
+    function setupDefaultProperties() {
+        // Propriedades padrão conforme solicitado:
+        // Apenas as básicas - id, body, from, to, fromMe, hasMedia, timestamp
+        const defaultProperties = ['message', 'msg_id', 'msg_body', 'msg_from', 'msg_to', 'msg_fromMe', 'msg_hasMedia', 'msg_timestamp'];
+        
+        // Selecionar apenas as propriedades padrão em ambos os formulários
+        document.querySelectorAll('input[id^="event-"], input[id^="prop-"], input[id^="edit-event-"], input[id^="edit-prop-"]').forEach(checkbox => {
+            checkbox.checked = defaultProperties.includes(checkbox.value);
+        });
+    }
+    
+    // Executar configuração padrão na carga da página
+    setupDefaultProperties();
 });
