@@ -51,25 +51,25 @@
     <div class="col-md-12">
         <div class="card shadow">
             <div class="card-header">
-                <h5 class="mb-0">n8n Webhook Integration</h5>
+                <h5 class="mb-0">Integração com n8n Webhook</h5>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-8">
-                        <p>Using webhooks, you can connect WhatsApp events to n8n workflows:</p>
+                        <p>Usando webhooks, você pode conectar eventos do WhatsApp aos fluxos de trabalho do n8n:</p>
                         <ol>
-                            <li>Create a webhook in n8n with the "Webhook" trigger node</li>
-                            <li>Copy the n8n webhook URL</li> 
-                            <li>Create a webhook here and paste the n8n URL</li>
-                            <li>Select the WhatsApp events you want to trigger the workflow</li>
+                            <li>Crie um webhook no n8n com o nó de gatilho "Webhook"</li>
+                            <li>Copie a URL do webhook do n8n</li> 
+                            <li>Crie um webhook aqui e cole a URL do n8n</li>
+                            <li>Selecione os eventos do WhatsApp que deseja usar para acionar o fluxo de trabalho</li>
                         </ol>
-                        <p>Your n8n workflow will receive a JSON payload with WhatsApp event data when the selected events occur.</p>
+                        <p>Seu fluxo de trabalho n8n receberá uma carga JSON com dados de eventos do WhatsApp quando os eventos selecionados ocorrerem.</p>
                     </div>
                     <div class="col-md-4">
                         <div class="alert alert-info h-100 d-flex align-items-center">
                             <div>
                                 <i class="fas fa-info-circle me-2 fa-2x float-start me-3"></i>
-                                For best results, create a separate webhook for each type of automation workflow. Each webhook can be configured with specific events to trigger different n8n workflows.
+                                Para melhores resultados, crie um webhook separado para cada tipo de fluxo de automação. Cada webhook pode ser configurado com eventos específicos para acionar diferentes fluxos de trabalho no n8n.
                             </div>
                         </div>
                     </div>
@@ -109,161 +109,311 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Events to Trigger Webhook</label>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <!-- Mensagens básicas -->
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="message" id="event-message" checked>
-                                    <label class="form-check-label" for="event-message" data-bs-toggle="tooltip" title="Dispara quando uma nova mensagem é recebida">
-                                        message (Mensagens recebidas)
-                                    </label>
+                        
+                        <!-- Eventos de mensagens padrão -->
+                        <div class="mb-3">
+                            <p class="mb-2"><strong>Eventos do WhatsApp:</strong></p>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <!-- Mensagens básicas -->
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="message" id="event-message" checked>
+                                        <label class="form-check-label" for="event-message" data-bs-toggle="tooltip" title="Dispara quando uma nova mensagem é recebida">
+                                            message (Mensagens recebidas)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="message_create" id="event-message-create" checked>
+                                        <label class="form-check-label" for="event-message-create" data-bs-toggle="tooltip" title="Dispara quando você envia uma mensagem por este cliente">
+                                            message_create (Mensagens enviadas)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="message_revoke_everyone" id="event-message-revoke-everyone" checked>
+                                        <label class="form-check-label" for="event-message-revoke-everyone" data-bs-toggle="tooltip" title="Dispara quando uma mensagem é apagada para todos">
+                                            message_revoke_everyone (Mensagem apagada)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="message_revoke_me" id="event-message-revoke-me" checked>
+                                        <label class="form-check-label" for="event-message-revoke-me" data-bs-toggle="tooltip" title="Dispara quando uma mensagem é apagada para você">
+                                            message_revoke_me (Mensagem apagada para mim)
+                                        </label>
+                                    </div>
+                                    <!-- Status e ações -->
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="message_ack" id="event-message-ack" checked>
+                                        <label class="form-check-label" for="event-message-ack" data-bs-toggle="tooltip" title="Dispara quando muda o status de entrega/leitura (recebida, lida, etc)">
+                                            message_ack (Confirmações de leitura)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="message_reaction" id="event-message-reaction" checked>
+                                        <label class="form-check-label" for="event-message-reaction" data-bs-toggle="tooltip" title="Dispara quando alguém reage a uma mensagem">
+                                            message_reaction (Reações a mensagens)
+                                        </label>
+                                    </div>
+                                    <!-- APIs de interação -->
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="send_text" id="event-send-text" checked>
+                                        <label class="form-check-label" for="event-send-text" data-bs-toggle="tooltip" title="Dispara quando a API de envio de texto é usada">
+                                            send_text (API de envio de texto)
+                                        </label>
+                                    </div>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="message_create" id="event-message-create" checked>
-                                    <label class="form-check-label" for="event-message-create" data-bs-toggle="tooltip" title="Dispara quando você envia uma mensagem por este cliente">
-                                        message_create (Mensagens enviadas)
-                                    </label>
+                                <div class="col-md-4">
+                                    <!-- Status e indicadores -->
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="seen" id="event-seen" checked>
+                                        <label class="form-check-label" for="event-seen" data-bs-toggle="tooltip" title="Dispara quando marcamos um chat como visto">
+                                            seen (Mensagem vista)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="typing" id="event-typing" checked>
+                                        <label class="form-check-label" for="event-typing" data-bs-toggle="tooltip" title="Dispara quando você começa a digitar">
+                                            typing (Começou a digitar)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="recording" id="event-recording" checked>
+                                        <label class="form-check-label" for="event-recording" data-bs-toggle="tooltip" title="Dispara quando alguém começa a gravar áudio">
+                                            recording (Gravando áudio)
+                                        </label>
+                                    </div>
+                                    <!-- Media e mensagens avançadas -->
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="media_uploaded" id="event-media-uploaded" checked>
+                                        <label class="form-check-label" for="event-media-uploaded" data-bs-toggle="tooltip" title="Dispara quando uma mídia é carregada para envio">
+                                            media_uploaded (Mídia carregada)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="poll_vote" id="event-poll-vote" checked>
+                                        <label class="form-check-label" for="event-poll-vote" data-bs-toggle="tooltip" title="Dispara quando alguém vota em uma enquete">
+                                            poll_vote (Voto em enquete)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="order" id="event-order" checked>
+                                        <label class="form-check-label" for="event-order" data-bs-toggle="tooltip" title="Dispara quando um pedido é recebido (WhatsApp Business)">
+                                            order (Pedido recebido)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="call" id="event-call" checked>
+                                        <label class="form-check-label" for="event-call" data-bs-toggle="tooltip" title="Dispara quando uma chamada é recebida ou finalizada">
+                                            call (Chamada recebida)
+                                        </label>
+                                    </div>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="message_revoke_everyone" id="event-message-revoke-everyone" checked>
-                                    <label class="form-check-label" for="event-message-revoke-everyone" data-bs-toggle="tooltip" title="Dispara quando uma mensagem é apagada para todos">
-                                        message_revoke_everyone (Mensagem apagada)
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="message_revoke_me" id="event-message-revoke-me" checked>
-                                    <label class="form-check-label" for="event-message-revoke-me" data-bs-toggle="tooltip" title="Dispara quando uma mensagem é apagada para você">
-                                        message_revoke_me (Mensagem apagada para mim)
-                                    </label>
-                                </div>
-                                <!-- Status e ações -->
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="message_ack" id="event-message-ack" checked>
-                                    <label class="form-check-label" for="event-message-ack" data-bs-toggle="tooltip" title="Dispara quando muda o status de entrega/leitura (recebida, lida, etc)">
-                                        message_ack (Confirmações de leitura)
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="message_reaction" id="event-message-reaction" checked>
-                                    <label class="form-check-label" for="event-message-reaction" data-bs-toggle="tooltip" title="Dispara quando alguém reage a uma mensagem">
-                                        message_reaction (Reações a mensagens)
-                                    </label>
-                                </div>
-                                <!-- APIs de interação -->
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="send_text" id="event-send-text" checked>
-                                    <label class="form-check-label" for="event-send-text" data-bs-toggle="tooltip" title="Dispara quando a API de envio de texto é usada">
-                                        send_text (API de envio de texto)
-                                    </label>
+                                <div class="col-md-4">
+                                    <!-- Grupos -->
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="group_join" id="event-group-join" checked>
+                                        <label class="form-check-label" for="event-group-join" data-bs-toggle="tooltip" title="Dispara quando alguém entra em um grupo">
+                                            group_join (Entrada em grupo)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="group_leave" id="event-group-leave" checked>
+                                        <label class="form-check-label" for="event-group-leave" data-bs-toggle="tooltip" title="Dispara quando alguém sai ou é removido de um grupo">
+                                            group_leave (Saída de grupo)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="group_update" id="event-group-update" checked>
+                                        <label class="form-check-label" for="event-group-update" data-bs-toggle="tooltip" title="Dispara quando informações do grupo são alteradas">
+                                            group_update (Atualização de grupo)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="group_admin_changed" id="event-group-admin-changed" checked>
+                                        <label class="form-check-label" for="event-group-admin-changed" data-bs-toggle="tooltip" title="Dispara quando administradores do grupo são alterados">
+                                            group_admin_changed (Mudança de admin)
+                                        </label>
+                                    </div>
+                                    <!-- Status da sessão -->
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="qr" id="event-qr">
+                                        <label class="form-check-label" for="event-qr" data-bs-toggle="tooltip" title="Dispara quando um novo QR code é gerado para conexão">
+                                            qr (QR code gerado)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="ready" id="event-ready" checked>
+                                        <label class="form-check-label" for="event-ready" data-bs-toggle="tooltip" title="Dispara quando a sessão está pronta para uso">
+                                            ready (Sessão pronta)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="authenticated" id="event-authenticated" checked>
+                                        <label class="form-check-label" for="event-authenticated" data-bs-toggle="tooltip" title="Dispara quando a sessão é autenticada">
+                                            authenticated (Autenticado)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="disconnected" id="event-disconnected" checked>
+                                        <label class="form-check-label" for="event-disconnected" data-bs-toggle="tooltip" title="Dispara quando a sessão é desconectada">
+                                            disconnected (Desconectado)
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <!-- Status e indicadores -->
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="seen" id="event-seen" checked>
-                                    <label class="form-check-label" for="event-seen" data-bs-toggle="tooltip" title="Dispara quando marcamos um chat como visto">
-                                        seen (Mensagem vista)
-                                    </label>
+                        </div>
+                        
+                        <!-- Propriedades da mensagem para filtros -->
+                        <div class="mb-3">
+                            <p class="mb-2"><strong>Propriedades da Mensagem (wwebjs.dev/Message):</strong></p>
+                            <div class="row">
+                                <!-- Coluna 1: Propriedades básicas -->
+                                <div class="col-md-4">
+                                    <h6 class="text-muted mb-2">Propriedades Básicas</h6>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_id" id="prop-id">
+                                        <label class="form-check-label" for="prop-id" data-bs-toggle="tooltip" title="ID único da mensagem">
+                                            id (ID da mensagem)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_body" id="prop-body">
+                                        <label class="form-check-label" for="prop-body" data-bs-toggle="tooltip" title="Conteúdo de texto da mensagem">
+                                            body (Texto da mensagem)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_type" id="prop-type">
+                                        <label class="form-check-label" for="prop-type" data-bs-toggle="tooltip" title="Tipo da mensagem (texto, mídia, etc)">
+                                            type (Tipo de mensagem)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_timestamp" id="prop-timestamp">
+                                        <label class="form-check-label" for="prop-timestamp" data-bs-toggle="tooltip" title="Data e hora em que a mensagem foi enviada">
+                                            timestamp (Data/hora)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_from" id="prop-from">
+                                        <label class="form-check-label" for="prop-from" data-bs-toggle="tooltip" title="ID do remetente da mensagem">
+                                            from (Remetente)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_to" id="prop-to">
+                                        <label class="form-check-label" for="prop-to" data-bs-toggle="tooltip" title="ID do destinatário da mensagem">
+                                            to (Destinatário)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_author" id="prop-author">
+                                        <label class="form-check-label" for="prop-author" data-bs-toggle="tooltip" title="Autor da mensagem em grupos">
+                                            author (Autor)
+                                        </label>
+                                    </div>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="typing" id="event-typing" checked>
-                                    <label class="form-check-label" for="event-typing" data-bs-toggle="tooltip" title="Dispara quando você começa a digitar">
-                                        typing (Começou a digitar)
-                                    </label>
+                                
+                                <!-- Coluna 2: Estados e flags -->
+                                <div class="col-md-4">
+                                    <h6 class="text-muted mb-2">Estados e Flags</h6>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_fromMe" id="prop-fromMe">
+                                        <label class="form-check-label" for="prop-fromMe" data-bs-toggle="tooltip" title="Indica se a mensagem foi enviada por você">
+                                            fromMe (Enviada por mim)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_hasMedia" id="prop-hasMedia">
+                                        <label class="form-check-label" for="prop-hasMedia" data-bs-toggle="tooltip" title="Indica se a mensagem contém mídia">
+                                            hasMedia (Contém mídia)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_hasQuotedMsg" id="prop-hasQuotedMsg">
+                                        <label class="form-check-label" for="prop-hasQuotedMsg" data-bs-toggle="tooltip" title="Indica se a mensagem é uma resposta a outra">
+                                            hasQuotedMsg (É resposta)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_ack" id="prop-ack">
+                                        <label class="form-check-label" for="prop-ack" data-bs-toggle="tooltip" title="Status de confirmação de leitura">
+                                            ack (Confirmação)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_isForwarded" id="prop-isForwarded">
+                                        <label class="form-check-label" for="prop-isForwarded" data-bs-toggle="tooltip" title="Indica se a mensagem foi encaminhada">
+                                            isForwarded (Encaminhada)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_isStarred" id="prop-isStarred">
+                                        <label class="form-check-label" for="prop-isStarred" data-bs-toggle="tooltip" title="Indica se a mensagem foi marcada com estrela">
+                                            isStarred (Com estrela)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_broadcast" id="prop-broadcast">
+                                        <label class="form-check-label" for="prop-broadcast" data-bs-toggle="tooltip" title="Indica se a mensagem é uma transmissão">
+                                            broadcast (Transmissão)
+                                        </label>
+                                    </div>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="recording" id="event-recording" checked>
-                                    <label class="form-check-label" for="event-recording" data-bs-toggle="tooltip" title="Dispara quando alguém começa a gravar áudio">
-                                        recording (Gravando áudio)
-                                    </label>
-                                </div>
-                                <!-- Media e mensagens avançadas -->
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="media_uploaded" id="event-media-uploaded" checked>
-                                    <label class="form-check-label" for="event-media-uploaded" data-bs-toggle="tooltip" title="Dispara quando uma mídia é carregada para envio">
-                                        media_uploaded (Mídia carregada)
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="poll_vote" id="event-poll-vote" checked>
-                                    <label class="form-check-label" for="event-poll-vote" data-bs-toggle="tooltip" title="Dispara quando alguém vota em uma enquete">
-                                        poll_vote (Voto em enquete)
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="order" id="event-order" checked>
-                                    <label class="form-check-label" for="event-order" data-bs-toggle="tooltip" title="Dispara quando um pedido é recebido (WhatsApp Business)">
-                                        order (Pedido recebido)
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="call" id="event-call" checked>
-                                    <label class="form-check-label" for="event-call" data-bs-toggle="tooltip" title="Dispara quando uma chamada é recebida ou finalizada">
-                                        call (Chamada recebida)
-                                    </label>
+                                
+                                <!-- Coluna 3: Propriedades de mídia -->
+                                <div class="col-md-4">
+                                    <h6 class="text-muted mb-2">Mídia e Conteúdo Especial</h6>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_mimetype" id="prop-mimetype">
+                                        <label class="form-check-label" for="prop-mimetype" data-bs-toggle="tooltip" title="Tipo MIME da mídia">
+                                            mimetype (Tipo de mídia)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_caption" id="prop-caption">
+                                        <label class="form-check-label" for="prop-caption" data-bs-toggle="tooltip" title="Legenda em mensagens com mídia">
+                                            caption (Legenda)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_location" id="prop-location">
+                                        <label class="form-check-label" for="prop-location" data-bs-toggle="tooltip" title="Informações de localização">
+                                            location (Localização)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_vCards" id="prop-vCards">
+                                        <label class="form-check-label" for="prop-vCards" data-bs-toggle="tooltip" title="Contatos compartilhados">
+                                            vCards (Contatos)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_mentionedIds" id="prop-mentionedIds">
+                                        <label class="form-check-label" for="prop-mentionedIds" data-bs-toggle="tooltip" title="IDs de contatos mencionados">
+                                            mentionedIds (Menções)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_orderId" id="prop-orderId">
+                                        <label class="form-check-label" for="prop-orderId" data-bs-toggle="tooltip" title="ID do pedido (Business)">
+                                            orderId (ID do pedido)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_links" id="prop-links">
+                                        <label class="form-check-label" for="prop-links" data-bs-toggle="tooltip" title="Links contidos na mensagem">
+                                            links (Links)
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <!-- Grupos -->
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="group_join" id="event-group-join" checked>
-                                    <label class="form-check-label" for="event-group-join" data-bs-toggle="tooltip" title="Dispara quando alguém entra em um grupo">
-                                        group_join (Entrada em grupo)
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="group_leave" id="event-group-leave" checked>
-                                    <label class="form-check-label" for="event-group-leave" data-bs-toggle="tooltip" title="Dispara quando alguém sai ou é removido de um grupo">
-                                        group_leave (Saída de grupo)
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="group_update" id="event-group-update" checked>
-                                    <label class="form-check-label" for="event-group-update" data-bs-toggle="tooltip" title="Dispara quando informações do grupo são alteradas">
-                                        group_update (Atualização de grupo)
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="group_admin_changed" id="event-group-admin-changed" checked>
-                                    <label class="form-check-label" for="event-group-admin-changed" data-bs-toggle="tooltip" title="Dispara quando administradores do grupo são alterados">
-                                        group_admin_changed (Mudança de admin)
-                                    </label>
-                                </div>
-                                <!-- Status da sessão -->
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="qr" id="event-qr">
-                                    <label class="form-check-label" for="event-qr" data-bs-toggle="tooltip" title="Dispara quando um novo QR code é gerado para conexão">
-                                        qr (QR code gerado)
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="ready" id="event-ready" checked>
-                                    <label class="form-check-label" for="event-ready" data-bs-toggle="tooltip" title="Dispara quando a sessão está pronta para uso">
-                                        ready (Sessão pronta)
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="authenticated" id="event-authenticated" checked>
-                                    <label class="form-check-label" for="event-authenticated" data-bs-toggle="tooltip" title="Dispara quando a sessão é autenticada">
-                                        authenticated (Autenticado)
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="disconnected" id="event-disconnected" checked>
-                                    <label class="form-check-label" for="event-disconnected" data-bs-toggle="tooltip" title="Dispara quando a sessão é desconectada">
-                                        disconnected (Desconectado)
-                                    </label>
-                                </div>
-                            </div>
+                        </div>
+                    </div>
                         </div>
                     </div>
                     
                     <div class="mb-3">
                         <label class="form-label">Endpoints de API para Integração n8n</label>
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i>
-                            Use estes endpoints nos seus fluxos de trabalho n8n para enviar comandos ao WhatsApp
-                        </div>
                         
                         <div class="mb-2" id="create-api-endpoints-container">
                             <div class="alert alert-warning">
@@ -368,161 +518,311 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Events to Trigger Webhook</label>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <!-- Mensagens básicas -->
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="message" id="edit-event-message">
-                                    <label class="form-check-label" for="edit-event-message" data-bs-toggle="tooltip" title="Dispara quando uma nova mensagem é recebida">
-                                        message (Mensagens recebidas)
-                                    </label>
+                        
+                        <!-- Eventos de mensagens padrão -->
+                        <div class="mb-3">
+                            <p class="mb-2"><strong>Eventos do WhatsApp:</strong></p>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <!-- Mensagens básicas -->
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="message" id="edit-event-message">
+                                        <label class="form-check-label" for="edit-event-message" data-bs-toggle="tooltip" title="Dispara quando uma nova mensagem é recebida">
+                                            message (Mensagens recebidas)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="message_create" id="edit-event-message-create">
+                                        <label class="form-check-label" for="edit-event-message-create" data-bs-toggle="tooltip" title="Dispara quando você envia uma mensagem por este cliente">
+                                            message_create (Mensagens enviadas)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="message_revoke_everyone" id="edit-event-message-revoke-everyone">
+                                        <label class="form-check-label" for="edit-event-message-revoke-everyone" data-bs-toggle="tooltip" title="Dispara quando uma mensagem é apagada para todos">
+                                            message_revoke_everyone (Mensagem apagada)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="message_revoke_me" id="edit-event-message-revoke-me">
+                                        <label class="form-check-label" for="edit-event-message-revoke-me" data-bs-toggle="tooltip" title="Dispara quando uma mensagem é apagada para você">
+                                            message_revoke_me (Mensagem apagada para mim)
+                                        </label>
+                                    </div>
+                                    <!-- Status e ações -->
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="message_ack" id="edit-event-message-ack">
+                                        <label class="form-check-label" for="edit-event-message-ack" data-bs-toggle="tooltip" title="Dispara quando muda o status de entrega/leitura (recebida, lida, etc)">
+                                            message_ack (Confirmações de leitura)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="message_reaction" id="edit-event-message-reaction">
+                                        <label class="form-check-label" for="edit-event-message-reaction" data-bs-toggle="tooltip" title="Dispara quando alguém reage a uma mensagem">
+                                            message_reaction (Reações a mensagens)
+                                        </label>
+                                    </div>
+                                    <!-- APIs de interação -->
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="send_text" id="edit-event-send-text">
+                                        <label class="form-check-label" for="edit-event-send-text" data-bs-toggle="tooltip" title="Dispara quando a API de envio de texto é usada">
+                                            send_text (API de envio de texto)
+                                        </label>
+                                    </div>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="message_create" id="edit-event-message-create">
-                                    <label class="form-check-label" for="edit-event-message-create" data-bs-toggle="tooltip" title="Dispara quando você envia uma mensagem por este cliente">
-                                        message_create (Mensagens enviadas)
-                                    </label>
+                                <div class="col-md-4">
+                                    <!-- Status e indicadores -->
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="seen" id="edit-event-seen">
+                                        <label class="form-check-label" for="edit-event-seen" data-bs-toggle="tooltip" title="Dispara quando marcamos um chat como visto">
+                                            seen (Mensagem vista)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="typing" id="edit-event-typing">
+                                        <label class="form-check-label" for="edit-event-typing" data-bs-toggle="tooltip" title="Dispara quando você começa a digitar">
+                                            typing (Começou a digitar)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="recording" id="edit-event-recording">
+                                        <label class="form-check-label" for="edit-event-recording" data-bs-toggle="tooltip" title="Dispara quando alguém começa a gravar áudio">
+                                            recording (Gravando áudio)
+                                        </label>
+                                    </div>
+                                    <!-- Media e mensagens avançadas -->
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="media_uploaded" id="edit-event-media-uploaded">
+                                        <label class="form-check-label" for="edit-event-media-uploaded" data-bs-toggle="tooltip" title="Dispara quando uma mídia é carregada para envio">
+                                            media_uploaded (Mídia carregada)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="poll_vote" id="edit-event-poll-vote">
+                                        <label class="form-check-label" for="edit-event-poll-vote" data-bs-toggle="tooltip" title="Dispara quando alguém vota em uma enquete">
+                                            poll_vote (Voto em enquete)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="order" id="edit-event-order">
+                                        <label class="form-check-label" for="edit-event-order" data-bs-toggle="tooltip" title="Dispara quando um pedido é recebido (WhatsApp Business)">
+                                            order (Pedido recebido)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="call" id="edit-event-call">
+                                        <label class="form-check-label" for="edit-event-call" data-bs-toggle="tooltip" title="Dispara quando uma chamada é recebida ou finalizada">
+                                            call (Chamada recebida)
+                                        </label>
+                                    </div>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="message_revoke_everyone" id="edit-event-message-revoke-everyone">
-                                    <label class="form-check-label" for="edit-event-message-revoke-everyone" data-bs-toggle="tooltip" title="Dispara quando uma mensagem é apagada para todos">
-                                        message_revoke_everyone (Mensagem apagada)
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="message_revoke_me" id="edit-event-message-revoke-me">
-                                    <label class="form-check-label" for="edit-event-message-revoke-me" data-bs-toggle="tooltip" title="Dispara quando uma mensagem é apagada para você">
-                                        message_revoke_me (Mensagem apagada para mim)
-                                    </label>
-                                </div>
-                                <!-- Status e ações -->
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="message_ack" id="edit-event-message-ack">
-                                    <label class="form-check-label" for="edit-event-message-ack" data-bs-toggle="tooltip" title="Dispara quando muda o status de entrega/leitura (recebida, lida, etc)">
-                                        message_ack (Confirmações de leitura)
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="message_reaction" id="edit-event-message-reaction">
-                                    <label class="form-check-label" for="edit-event-message-reaction" data-bs-toggle="tooltip" title="Dispara quando alguém reage a uma mensagem">
-                                        message_reaction (Reações a mensagens)
-                                    </label>
-                                </div>
-                                <!-- APIs de interação -->
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="send_text" id="edit-event-send-text">
-                                    <label class="form-check-label" for="edit-event-send-text" data-bs-toggle="tooltip" title="Dispara quando a API de envio de texto é usada">
-                                        send_text (API de envio de texto)
-                                    </label>
+                                <div class="col-md-4">
+                                    <!-- Grupos -->
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="group_join" id="edit-event-group-join">
+                                        <label class="form-check-label" for="edit-event-group-join" data-bs-toggle="tooltip" title="Dispara quando alguém entra em um grupo">
+                                            group_join (Entrada em grupo)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="group_leave" id="edit-event-group-leave">
+                                        <label class="form-check-label" for="edit-event-group-leave" data-bs-toggle="tooltip" title="Dispara quando alguém sai ou é removido de um grupo">
+                                            group_leave (Saída de grupo)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="group_update" id="edit-event-group-update">
+                                        <label class="form-check-label" for="edit-event-group-update" data-bs-toggle="tooltip" title="Dispara quando informações do grupo são alteradas">
+                                            group_update (Atualização de grupo)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="group_admin_changed" id="edit-event-group-admin-changed">
+                                        <label class="form-check-label" for="edit-event-group-admin-changed" data-bs-toggle="tooltip" title="Dispara quando administradores do grupo são alterados">
+                                            group_admin_changed (Mudança de admin)
+                                        </label>
+                                    </div>
+                                    <!-- Status da sessão -->
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="qr" id="edit-event-qr">
+                                        <label class="form-check-label" for="edit-event-qr" data-bs-toggle="tooltip" title="Dispara quando um novo QR code é gerado para conexão">
+                                            qr (QR code gerado)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="ready" id="edit-event-ready">
+                                        <label class="form-check-label" for="edit-event-ready" data-bs-toggle="tooltip" title="Dispara quando a sessão está pronta para uso">
+                                            ready (Sessão pronta)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="authenticated" id="edit-event-authenticated">
+                                        <label class="form-check-label" for="edit-event-authenticated" data-bs-toggle="tooltip" title="Dispara quando a sessão é autenticada">
+                                            authenticated (Autenticado)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="disconnected" id="edit-event-disconnected">
+                                        <label class="form-check-label" for="edit-event-disconnected" data-bs-toggle="tooltip" title="Dispara quando a sessão é desconectada">
+                                            disconnected (Desconectado)
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <!-- Status e indicadores -->
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="seen" id="edit-event-seen">
-                                    <label class="form-check-label" for="edit-event-seen" data-bs-toggle="tooltip" title="Dispara quando marcamos um chat como visto">
-                                        seen (Mensagem vista)
-                                    </label>
+                        </div>
+                        
+                        <!-- Propriedades da mensagem para filtros -->
+                        <div class="mb-3">
+                            <p class="mb-2"><strong>Propriedades da Mensagem (wwebjs.dev/Message):</strong></p>
+                            <div class="row">
+                                <!-- Coluna 1: Propriedades básicas -->
+                                <div class="col-md-4">
+                                    <h6 class="text-muted mb-2">Propriedades Básicas</h6>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_id" id="edit-prop-id">
+                                        <label class="form-check-label" for="edit-prop-id" data-bs-toggle="tooltip" title="ID único da mensagem">
+                                            id (ID da mensagem)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_body" id="edit-prop-body">
+                                        <label class="form-check-label" for="edit-prop-body" data-bs-toggle="tooltip" title="Conteúdo de texto da mensagem">
+                                            body (Texto da mensagem)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_type" id="edit-prop-type">
+                                        <label class="form-check-label" for="edit-prop-type" data-bs-toggle="tooltip" title="Tipo da mensagem (texto, mídia, etc)">
+                                            type (Tipo de mensagem)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_timestamp" id="edit-prop-timestamp">
+                                        <label class="form-check-label" for="edit-prop-timestamp" data-bs-toggle="tooltip" title="Data e hora em que a mensagem foi enviada">
+                                            timestamp (Data/hora)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_from" id="edit-prop-from">
+                                        <label class="form-check-label" for="edit-prop-from" data-bs-toggle="tooltip" title="ID do remetente da mensagem">
+                                            from (Remetente)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_to" id="edit-prop-to">
+                                        <label class="form-check-label" for="edit-prop-to" data-bs-toggle="tooltip" title="ID do destinatário da mensagem">
+                                            to (Destinatário)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_author" id="edit-prop-author">
+                                        <label class="form-check-label" for="edit-prop-author" data-bs-toggle="tooltip" title="Autor da mensagem em grupos">
+                                            author (Autor)
+                                        </label>
+                                    </div>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="typing" id="edit-event-typing">
-                                    <label class="form-check-label" for="edit-event-typing" data-bs-toggle="tooltip" title="Dispara quando você começa a digitar">
-                                        typing (Começou a digitar)
-                                    </label>
+                                
+                                <!-- Coluna 2: Estados e flags -->
+                                <div class="col-md-4">
+                                    <h6 class="text-muted mb-2">Estados e Flags</h6>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_fromMe" id="edit-prop-fromMe">
+                                        <label class="form-check-label" for="edit-prop-fromMe" data-bs-toggle="tooltip" title="Indica se a mensagem foi enviada por você">
+                                            fromMe (Enviada por mim)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_hasMedia" id="edit-prop-hasMedia">
+                                        <label class="form-check-label" for="edit-prop-hasMedia" data-bs-toggle="tooltip" title="Indica se a mensagem contém mídia">
+                                            hasMedia (Contém mídia)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_hasQuotedMsg" id="edit-prop-hasQuotedMsg">
+                                        <label class="form-check-label" for="edit-prop-hasQuotedMsg" data-bs-toggle="tooltip" title="Indica se a mensagem é uma resposta a outra">
+                                            hasQuotedMsg (É resposta)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_ack" id="edit-prop-ack">
+                                        <label class="form-check-label" for="edit-prop-ack" data-bs-toggle="tooltip" title="Status de confirmação de leitura">
+                                            ack (Confirmação)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_isForwarded" id="edit-prop-isForwarded">
+                                        <label class="form-check-label" for="edit-prop-isForwarded" data-bs-toggle="tooltip" title="Indica se a mensagem foi encaminhada">
+                                            isForwarded (Encaminhada)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_isStarred" id="edit-prop-isStarred">
+                                        <label class="form-check-label" for="edit-prop-isStarred" data-bs-toggle="tooltip" title="Indica se a mensagem foi marcada com estrela">
+                                            isStarred (Com estrela)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_broadcast" id="edit-prop-broadcast">
+                                        <label class="form-check-label" for="edit-prop-broadcast" data-bs-toggle="tooltip" title="Indica se a mensagem é uma transmissão">
+                                            broadcast (Transmissão)
+                                        </label>
+                                    </div>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="recording" id="edit-event-recording">
-                                    <label class="form-check-label" for="edit-event-recording" data-bs-toggle="tooltip" title="Dispara quando alguém começa a gravar áudio">
-                                        recording (Gravando áudio)
-                                    </label>
-                                </div>
-                                <!-- Media e mensagens avançadas -->
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="media_uploaded" id="edit-event-media-uploaded">
-                                    <label class="form-check-label" for="edit-event-media-uploaded" data-bs-toggle="tooltip" title="Dispara quando uma mídia é carregada para envio">
-                                        media_uploaded (Mídia carregada)
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="poll_vote" id="edit-event-poll-vote">
-                                    <label class="form-check-label" for="edit-event-poll-vote" data-bs-toggle="tooltip" title="Dispara quando alguém vota em uma enquete">
-                                        poll_vote (Voto em enquete)
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="order" id="edit-event-order">
-                                    <label class="form-check-label" for="edit-event-order" data-bs-toggle="tooltip" title="Dispara quando um pedido é recebido (WhatsApp Business)">
-                                        order (Pedido recebido)
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="call" id="edit-event-call">
-                                    <label class="form-check-label" for="edit-event-call" data-bs-toggle="tooltip" title="Dispara quando uma chamada é recebida ou finalizada">
-                                        call (Chamada recebida)
-                                    </label>
+                                
+                                <!-- Coluna 3: Propriedades de mídia -->
+                                <div class="col-md-4">
+                                    <h6 class="text-muted mb-2">Mídia e Conteúdo Especial</h6>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_mimetype" id="edit-prop-mimetype">
+                                        <label class="form-check-label" for="edit-prop-mimetype" data-bs-toggle="tooltip" title="Tipo MIME da mídia">
+                                            mimetype (Tipo de mídia)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_caption" id="edit-prop-caption">
+                                        <label class="form-check-label" for="edit-prop-caption" data-bs-toggle="tooltip" title="Legenda em mensagens com mídia">
+                                            caption (Legenda)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_location" id="edit-prop-location">
+                                        <label class="form-check-label" for="edit-prop-location" data-bs-toggle="tooltip" title="Informações de localização">
+                                            location (Localização)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_vCards" id="edit-prop-vCards">
+                                        <label class="form-check-label" for="edit-prop-vCards" data-bs-toggle="tooltip" title="Contatos compartilhados">
+                                            vCards (Contatos)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_mentionedIds" id="edit-prop-mentionedIds">
+                                        <label class="form-check-label" for="edit-prop-mentionedIds" data-bs-toggle="tooltip" title="IDs de contatos mencionados">
+                                            mentionedIds (Menções)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_orderId" id="edit-prop-orderId">
+                                        <label class="form-check-label" for="edit-prop-orderId" data-bs-toggle="tooltip" title="ID do pedido (Business)">
+                                            orderId (ID do pedido)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="msg_links" id="edit-prop-links">
+                                        <label class="form-check-label" for="edit-prop-links" data-bs-toggle="tooltip" title="Links contidos na mensagem">
+                                            links (Links)
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <!-- Grupos -->
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="group_join" id="edit-event-group-join">
-                                    <label class="form-check-label" for="edit-event-group-join" data-bs-toggle="tooltip" title="Dispara quando alguém entra em um grupo">
-                                        group_join (Entrada em grupo)
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="group_leave" id="edit-event-group-leave">
-                                    <label class="form-check-label" for="edit-event-group-leave" data-bs-toggle="tooltip" title="Dispara quando alguém sai ou é removido de um grupo">
-                                        group_leave (Saída de grupo)
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="group_update" id="edit-event-group-update">
-                                    <label class="form-check-label" for="edit-event-group-update" data-bs-toggle="tooltip" title="Dispara quando informações do grupo são alteradas">
-                                        group_update (Atualização de grupo)
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="group_admin_changed" id="edit-event-group-admin-changed">
-                                    <label class="form-check-label" for="edit-event-group-admin-changed" data-bs-toggle="tooltip" title="Dispara quando administradores do grupo são alterados">
-                                        group_admin_changed (Mudança de admin)
-                                    </label>
-                                </div>
-                                <!-- Status da sessão -->
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="qr" id="edit-event-qr">
-                                    <label class="form-check-label" for="edit-event-qr" data-bs-toggle="tooltip" title="Dispara quando um novo QR code é gerado para conexão">
-                                        qr (QR code gerado)
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="ready" id="edit-event-ready">
-                                    <label class="form-check-label" for="edit-event-ready" data-bs-toggle="tooltip" title="Dispara quando a sessão está pronta para uso">
-                                        ready (Sessão pronta)
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="authenticated" id="edit-event-authenticated">
-                                    <label class="form-check-label" for="edit-event-authenticated" data-bs-toggle="tooltip" title="Dispara quando a sessão é autenticada">
-                                        authenticated (Autenticado)
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="disconnected" id="edit-event-disconnected">
-                                    <label class="form-check-label" for="edit-event-disconnected" data-bs-toggle="tooltip" title="Dispara quando a sessão é desconectada">
-                                        disconnected (Desconectado)
-                                    </label>
-                                </div>
-                            </div>
+                        </div>
+                    </div>
                         </div>
                     </div>
                     
                     <div class="mb-3">
                         <label class="form-label">Endpoints de API para Integração n8n</label>
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i>
-                            Use estes endpoints nos seus fluxos de trabalho n8n para enviar comandos ao WhatsApp
-                        </div>
                         
                         <div class="mb-2" id="api-endpoints-container">
                             <div class="spinner-border spinner-border-sm me-2" role="status"></div>
