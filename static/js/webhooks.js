@@ -4,6 +4,11 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar tooltips do Bootstrap
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
     // Elements
     const webhooksTableBody = document.getElementById('webhooks-table-body');
     const webhookSessionSelect = document.getElementById('webhook-session');
@@ -56,26 +61,142 @@ document.addEventListener('DOMContentLoaded', function() {
                 let html = `
                     <div class="table-responsive">
                         <table class="table table-sm table-bordered">
-                            <tr>
-                                <th style="width: 30%">Função</th>
-                                <th>URL do Endpoint</th>
-                            </tr>
-                            <tr>
-                                <td>Enviar texto</td>
-                                <td><code>${baseUrl}/api/sessions/${sessionId}/send-text</code></td>
-                            </tr>
-                            <tr>
-                                <td>Marcar como visto</td>
-                                <td><code>${baseUrl}/api/sessions/${sessionId}/seen</code></td>
-                            </tr>
-                            <tr>
-                                <td>Iniciar digitação</td>
-                                <td><code>${baseUrl}/api/sessions/${sessionId}/typing</code></td>
-                            </tr>
-                            <tr>
-                                <td>Receber eventos do Webhook</td>
-                                <td><code>${baseUrl}/api/sessions/${sessionId}/webhook</code></td>
-                            </tr>
+                            <thead>
+                                <tr>
+                                    <th style="width: 30%">Função</th>
+                                    <th>URL do Endpoint</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Endpoints básicos -->
+                                <tr class="table-primary">
+                                    <td colspan="2"><strong>Ações básicas</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>Enviar texto</td>
+                                    <td><code>${baseUrl}/api/sessions/${sessionId}/send-text</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Marcar como visto</td>
+                                    <td><code>${baseUrl}/api/sessions/${sessionId}/seen</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Iniciar digitação</td>
+                                    <td><code>${baseUrl}/api/sessions/${sessionId}/typing</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Endpoint para receber webhooks</td>
+                                    <td><code>${baseUrl}/api/sessions/${sessionId}/webhook</code></td>
+                                </tr>
+                                
+                                <!-- Gerenciamento de mensagens -->
+                                <tr class="table-primary">
+                                    <td colspan="2"><strong>Gerenciamento de mensagens</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>Buscar mensagens do chat</td>
+                                    <td><code>${baseUrl}/api/sessions/${sessionId}/messages</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Apagar mensagem</td>
+                                    <td><code>${baseUrl}/api/sessions/${sessionId}/delete-message</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Reagir a mensagem</td>
+                                    <td><code>${baseUrl}/api/sessions/${sessionId}/react</code></td>
+                                </tr>
+                                
+                                <!-- Mídia e mensagens avançadas -->
+                                <tr class="table-primary">
+                                    <td colspan="2"><strong>Mídia e mensagens avançadas</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>Enviar imagem</td>
+                                    <td><code>${baseUrl}/api/sessions/${sessionId}/send-image</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Enviar arquivo</td>
+                                    <td><code>${baseUrl}/api/sessions/${sessionId}/send-file</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Enviar áudio</td>
+                                    <td><code>${baseUrl}/api/sessions/${sessionId}/send-voice</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Enviar localização</td>
+                                    <td><code>${baseUrl}/api/sessions/${sessionId}/send-location</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Criar enquete</td>
+                                    <td><code>${baseUrl}/api/sessions/${sessionId}/create-poll</code></td>
+                                </tr>
+                                
+                                <!-- Gerenciamento de grupos -->
+                                <tr class="table-primary">
+                                    <td colspan="2"><strong>Gerenciamento de grupos</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>Criar grupo</td>
+                                    <td><code>${baseUrl}/api/sessions/${sessionId}/create-group</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Adicionar participante</td>
+                                    <td><code>${baseUrl}/api/sessions/${sessionId}/add-participant</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Remover participante</td>
+                                    <td><code>${baseUrl}/api/sessions/${sessionId}/remove-participant</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Promover a admin</td>
+                                    <td><code>${baseUrl}/api/sessions/${sessionId}/promote-participant</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Remover de admin</td>
+                                    <td><code>${baseUrl}/api/sessions/${sessionId}/demote-participant</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Alterar descrição do grupo</td>
+                                    <td><code>${baseUrl}/api/sessions/${sessionId}/set-group-description</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Alterar assunto do grupo</td>
+                                    <td><code>${baseUrl}/api/sessions/${sessionId}/set-group-subject</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Listar dados do grupo</td>
+                                    <td><code>${baseUrl}/api/sessions/${sessionId}/get-group-info</code></td>
+                                </tr>
+                                
+                                <!-- Contatos e Chats -->
+                                <tr class="table-primary">
+                                    <td colspan="2"><strong>Contatos e Chats</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>Listar contatos</td>
+                                    <td><code>${baseUrl}/api/sessions/${sessionId}/contacts</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Listar chats</td>
+                                    <td><code>${baseUrl}/api/sessions/${sessionId}/chats</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Obter foto de perfil</td>
+                                    <td><code>${baseUrl}/api/sessions/${sessionId}/profile-pic</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Verificar número na WA</td>
+                                    <td><code>${baseUrl}/api/sessions/${sessionId}/check-number</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Bloquear contato</td>
+                                    <td><code>${baseUrl}/api/sessions/${sessionId}/block-contact</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Desbloquear contato</td>
+                                    <td><code>${baseUrl}/api/sessions/${sessionId}/unblock-contact</code></td>
+                                </tr>
+                            </tbody>
                         </table>
                     </div>
                 `;
