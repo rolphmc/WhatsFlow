@@ -3,12 +3,19 @@
  * Handles CRUD operations for n8n webhooks
  */
 
+// Função para inicializar tooltips
+function initTooltips() {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl, {
+            trigger: 'hover'
+        });
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Inicializar tooltips do Bootstrap
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
-    })
+    // Inicializar tooltips do Bootstrap na carga inicial
+    initTooltips();
     // Elements
     const webhooksTableBody = document.getElementById('webhooks-table-body');
     const webhookSessionSelect = document.getElementById('webhook-session');
@@ -285,9 +292,44 @@ document.addEventListener('DOMContentLoaded', function() {
                 let tableContent = '';
                 webhooks.forEach(webhook => {
                     const sessionName = sessionMap[webhook.session_id] || `Session ${webhook.session_id}`;
-                    const eventBadges = webhook.events.map(event => 
-                        `<span class="badge bg-secondary event-badge">${event}</span>`
-                    ).join(' ');
+                    // Separar eventos padrão dos eventos de propriedades da mensagem
+                    const standardEvents = webhook.events.filter(event => !event.startsWith('prop-'));
+                    const propEvents = webhook.events.filter(event => event.startsWith('prop-'));
+                    
+                    // Limitar o número de eventos mostrados diretamente na tabela
+                    const maxVisibleEvents = 3;
+                    let displayedEvents = [...standardEvents];
+                    
+                    // Se temos propriedades, adicionar um indicador de propriedades
+                    if (propEvents.length > 0) {
+                        displayedEvents.push(`+${propEvents.length} propriedades`);
+                    }
+                    
+                    // Criar badges para eventos visíveis e um contador se houver mais
+                    let eventBadges = '';
+                    
+                    if (displayedEvents.length <= maxVisibleEvents) {
+                        // Mostrar todos os eventos se forem poucos
+                        eventBadges = displayedEvents.map(event => 
+                            `<span class="badge bg-secondary event-badge">${event}</span>`
+                        ).join(' ');
+                    } else {
+                        // Mostrar apenas alguns eventos + contador
+                        const visibleEvents = displayedEvents.slice(0, maxVisibleEvents);
+                        const remainingCount = displayedEvents.length - maxVisibleEvents;
+                        
+                        eventBadges = visibleEvents.map(event => 
+                            `<span class="badge bg-secondary event-badge">${event}</span>`
+                        ).join(' ');
+                        
+                        eventBadges += ` <span class="badge bg-info event-badge" data-bs-toggle="tooltip" 
+                            title="${remainingCount} eventos adicionais">+${remainingCount}</span>`;
+                    }
+                    
+                    // Adicionar tooltip com lista completa de eventos
+                    const allEventsTitle = webhook.events.join(', ');
+                    eventBadges = `<div class="d-flex flex-wrap gap-1" data-bs-toggle="tooltip" 
+                        title="${allEventsTitle}">${eventBadges}</div>`;
                     
                     tableContent += `
                         <tr>
@@ -331,6 +373,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.querySelectorAll('.webhook-active-toggle').forEach(toggle => {
                     toggle.addEventListener('change', toggleWebhookActive);
                 });
+                
+                // Inicializar todos os tooltips
+                initTooltips();
             })
             .catch(error => {
                 console.error('Error fetching sessions for webhook table:', error);

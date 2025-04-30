@@ -3,7 +3,19 @@
  * Handles CRUD operations for WhatsApp Web sessions
  */
 
+// Função para inicializar tooltips
+function initTooltips() {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl, {
+            trigger: 'hover'
+        });
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar tooltips do Bootstrap na carga inicial
+    initTooltips();
     // Function to load API endpoints for all active sessions
     function loadApiEndpoints() {
         const apiEndpointsTableBody = document.getElementById('api-endpoints-table-body');
@@ -253,6 +265,9 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.delete-session-btn').forEach(btn => {
             btn.addEventListener('click', openDeleteSessionModal);
         });
+        
+        // Inicializar tooltips após renderizar a tabela
+        initTooltips();
     }
     
     // Function to create a new session
