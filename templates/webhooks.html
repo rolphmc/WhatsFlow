@@ -489,10 +489,10 @@
 </div>
 
 <!-- Edit Webhook Modal -->
-<div class="modal fade" id="editWebhookModal" tabindex="-1" aria-labelledby="editWebhookModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
+<div class="modal fade" id="editWebhookModal" tabindex="-1" aria-labelledby="editWebhookModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content border border-2 shadow">
+            <div class="modal-header border-bottom">
                 <h5 class="modal-title" id="editWebhookModalLabel">Editar Webhook</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -814,6 +814,12 @@
                                             links (Links)
                                         </label>
                                     </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="include_headers" id="edit-prop-headers">
+                                        <label class="form-check-label" for="edit-prop-headers" data-bs-toggle="tooltip" title="Incluir cabeçalhos HTTP na resposta">
+                                            include_headers (Incluir cabeçalhos HTTP)
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -896,15 +902,15 @@
 </div>
 
 <!-- Confirm Delete Modal -->
-<div class="modal fade" id="deleteWebhookModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirm Delete</h5>
+<div class="modal fade" id="deleteWebhookModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border border-2 shadow">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete this webhook? This action cannot be undone.</p>
+                <p>Tem certeza que deseja excluir este webhook? Esta ação não pode ser desfeita.</p>
                 <p><strong>Webhook: </strong><span id="delete-webhook-name"></span></p>
             </div>
             <div class="modal-footer bg-light">
