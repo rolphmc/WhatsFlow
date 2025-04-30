@@ -54,6 +54,15 @@
             </div>
             <div class="card-body">
                 <p class="lead">Use these endpoints in your n8n workflows to send commands to WhatsApp:</p>
+                <div class="alert alert-warning mb-3">
+                    <h6><i class="fas fa-exclamation-triangle me-2"></i>Importante para uso com n8n</h6>
+                    <p class="mb-1">Os endpoints estão configurados para usar HTTPS, que é o protocolo esperado pelo n8n por padrão.</p>
+                    <p class="mb-1">Se você receber um erro "Client sent an HTTP request to an HTTPS server", você tem duas opções:</p>
+                    <ol class="mb-0">
+                        <li>Recomendado: Configure um proxy HTTPS para sua aplicação</li>
+                        <li>Alternativa: Configure o n8n para aceitar HTTP em Settings > API > Protocol</li>
+                    </ol>
+                </div>
                 <div class="table-responsive">
                     <table class="table table-hover" id="api-endpoints-table">
                         <thead>

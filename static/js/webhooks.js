@@ -383,11 +383,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Calculate the port based on session ID (same logic as in whatsapp_bridge.js)
                     const port = 3000 + parseInt(session.id);
                     
-                    // Generate the URLs for each API endpoint
-                    const sendTextUrl = `http://${window.location.hostname}:${port}/api/send-text`;
-                    const seenUrl = `http://${window.location.hostname}:${port}/api/seen`;
-                    const typingUrl = `http://${window.location.hostname}:${port}/api/typing`;
-                    const webhookUrl = `http://${window.location.hostname}:${port}/api/waha-webhook`;
+                    // Generate the URLs for each API endpoint (using HTTPS for n8n compatibility)
+                    const useHttps = true; // Set to true for n8n compatibility
+                    const protocol = useHttps ? 'https' : 'http';
+                    const sendTextUrl = `${protocol}://${window.location.hostname}:${port}/api/send-text`;
+                    const seenUrl = `${protocol}://${window.location.hostname}:${port}/api/seen`;
+                    const typingUrl = `${protocol}://${window.location.hostname}:${port}/api/typing`;
+                    const webhookUrl = `${protocol}://${window.location.hostname}:${port}/api/waha-webhook`;
                     
                     // Add table row with copy buttons
                     tableContent += `
