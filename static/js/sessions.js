@@ -426,6 +426,10 @@ document.addEventListener('DOMContentLoaded', function() {
         deleteSessionModal.show();
     }
     
+    // Variáveis para o progress bar do QR code
+    let qrExpiryInterval;
+    let qrExpiryTime = 60; // em segundos
+    
     // Function to check for QR code
     function checkForQRCode() {
         if (qrCheckInterval) {
@@ -449,6 +453,83 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 120000);
     }
     
+    // Function to reset QR code expiry progress bar
+    function resetQRExpiryProgress() {
+        // Limpar intervalo anterior, se existir
+        if (qrExpiryInterval) {
+            clearInterval(qrExpiryInterval);
+        }
+        
+        // Resetar tempo de expiração
+        qrExpiryTime = 60;
+        const progressBar = document.getElementById('qr-expiry-progress');
+        if (progressBar) {
+            progressBar.style.width = '100%';
+        }
+        
+        // Iniciar contagem regressiva
+        qrExpiryInterval = setInterval(() => {
+            qrExpiryTime--;
+            const percentage = (qrExpiryTime / 60) * 100;
+            
+            if (progressBar) {
+                progressBar.style.width = `${percentage}%`;
+                
+                // Mudar cor conforme aproxima do fim
+                if (percentage > 60) {
+                    progressBar.className = 'progress-bar bg-info';
+                } else if (percentage > 30) {
+                    progressBar.className = 'progress-bar bg-warning';
+                } else {
+                    progressBar.className = 'progress-bar bg-danger';
+                }
+            }
+            
+            // Quando expirar
+            if (qrExpiryTime <= 0) {
+                clearInterval(qrExpiryInterval);
+                document.getElementById('connection-status-text').textContent = 'Código QR expirado. Atualizando...';
+                
+                // Tentar obter um novo QR code
+                checkSessionStatus();
+            }
+        }, 1000);
+    }
+    
+    // Function to update connection status in modal
+    function updateConnectionStatus(status) {
+        const statusText = document.getElementById('connection-status-text');
+        const statusAlert = document.getElementById('qr-connection-status');
+        
+        if (!statusText || !statusAlert) return;
+        
+        switch(status) {
+            case 'qr_code_ready':
+                statusText.textContent = 'Aguardando escaneamento do código QR...';
+                statusAlert.className = 'alert alert-info mb-3';
+                break;
+            case 'connecting':
+                statusText.textContent = 'Conectando ao WhatsApp...';
+                statusAlert.className = 'alert alert-warning mb-3';
+                break;
+            case 'authenticated':
+                statusText.textContent = 'Autenticado! Inicializando sessão...';
+                statusAlert.className = 'alert alert-success mb-3';
+                break;
+            case 'connected':
+                statusText.textContent = 'Conectado com sucesso!';
+                statusAlert.className = 'alert alert-success mb-3';
+                break;
+            case 'disconnected':
+                statusText.textContent = 'Desconectado. Tentando reconectar...';
+                statusAlert.className = 'alert alert-danger mb-3';
+                break;
+            default:
+                statusText.textContent = 'Aguardando conexão...';
+                statusAlert.className = 'alert alert-secondary mb-3';
+        }
+    }
+    
     // Function to check session status for QR code
     function checkSessionStatus() {
         if (!selectedSessionId) return;
@@ -461,29 +542,54 @@ document.addEventListener('DOMContentLoaded', function() {
                         <img src="${session.qr_code}" alt="WhatsApp QR Code" class="img-fluid">
                         <p class="mt-2">Escaneie com seu aplicativo WhatsApp no celular</p>
                     `;
+                    updateConnectionStatus('qr_code_ready');
+                    resetQRExpiryProgress();
                     qrCodeModal.show();
-                    
-                    // Stop checking once we've shown the QR code
-                    if (qrCheckInterval) {
-                        clearInterval(qrCheckInterval);
-                        qrCheckInterval = null;
-                    }
+                }
+                
+                // Update connection status based on session status
+                if (session.status === 'connecting') {
+                    updateConnectionStatus('connecting');
+                }
+                
+                if (session.status === 'authenticated') {
+                    updateConnectionStatus('authenticated');
+                    // Manter o modal aberto, mas mostrar que estamos progredindo
                 }
                 
                 // If session is connected, stop checking and show success message
                 if (session.status === 'connected') {
+                    updateConnectionStatus('connected');
+                    
                     if (qrCheckInterval) {
                         clearInterval(qrCheckInterval);
                         qrCheckInterval = null;
                     }
                     
-                    qrCodeModal.hide();
-                    showToast('Sessão do WhatsApp conectada com sucesso', 'success');
-                    loadSessions();
+                    if (qrExpiryInterval) {
+                        clearInterval(qrExpiryInterval);
+                        qrExpiryInterval = null;
+                    }
+                    
+                    // Manter o modal aberto por 2 segundos para mostrar mensagem de sucesso
+                    setTimeout(() => {
+                        qrCodeModal.hide();
+                        showToast('Sessão do WhatsApp conectada com sucesso', 'success');
+                        loadSessions();
+                    }, 2000);
+                }
+                
+                // If session is disconnected
+                if (session.status === 'disconnected') {
+                    updateConnectionStatus('disconnected');
                 }
             })
             .catch(error => {
                 console.error('Error checking session status:', error);
+                // Não esconder o modal em caso de erro, apenas mostrar o status
+                document.getElementById('connection-status-text').textContent = 
+                    `Erro ao verificar status: ${error.message || 'Erro desconhecido'}`;
+                document.getElementById('qr-connection-status').className = 'alert alert-danger mb-3';
             });
     }
 });
