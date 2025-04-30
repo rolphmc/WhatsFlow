@@ -15,6 +15,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const editWebhookIdInput = document.getElementById('edit-webhook-id');
     const confirmDeleteWebhookBtn = document.getElementById('confirm-delete-webhook-btn');
     const deleteWebhookNameSpan = document.getElementById('delete-webhook-name');
+    const apiEndpointsContainer = document.getElementById('api-endpoints-container');
+    const createApiEndpointsContainer = document.getElementById('create-api-endpoints-container');
     
     let selectedWebhookId = null;
     
@@ -22,7 +24,72 @@ document.addEventListener('DOMContentLoaded', function() {
     loadWebhooks();
     loadSessions();
     
-    // API endpoints have been moved to sessions page
+    // Event listener to update API endpoints when session is selected
+    webhookSessionSelect.addEventListener('change', function() {
+        const sessionId = this.value;
+        displayApiEndpoints(sessionId, 'create-api-endpoints-container');
+    });
+    
+    // Event listener to update API endpoints when session is selected in edit mode
+    editWebhookSessionSelect.addEventListener('change', function() {
+        const sessionId = this.value;
+        displayApiEndpoints(sessionId, 'api-endpoints-container');
+    });
+    
+    // API endpoints display functions
+    function displayApiEndpoints(sessionId, containerId) {
+        if (!sessionId) {
+            document.getElementById(containerId).innerHTML = `
+                <div class="alert alert-warning">
+                    Selecione uma sessão do WhatsApp para visualizar os endpoints de API disponíveis.
+                </div>
+            `;
+            return;
+        }
+        
+        apiCall(`/api/sessions/${sessionId}`)
+            .then(session => {
+                const hostname = window.location.hostname;
+                const protocol = window.location.protocol;
+                const baseUrl = `${protocol}//${hostname}`;
+                
+                let html = `
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <tr>
+                                <th style="width: 30%">Função</th>
+                                <th>URL do Endpoint</th>
+                            </tr>
+                            <tr>
+                                <td>Enviar texto</td>
+                                <td><code>${baseUrl}/api/sessions/${sessionId}/send-text</code></td>
+                            </tr>
+                            <tr>
+                                <td>Marcar como visto</td>
+                                <td><code>${baseUrl}/api/sessions/${sessionId}/seen</code></td>
+                            </tr>
+                            <tr>
+                                <td>Iniciar digitação</td>
+                                <td><code>${baseUrl}/api/sessions/${sessionId}/typing</code></td>
+                            </tr>
+                            <tr>
+                                <td>Receber eventos do Webhook</td>
+                                <td><code>${baseUrl}/api/sessions/${sessionId}/webhook</code></td>
+                            </tr>
+                        </table>
+                    </div>
+                `;
+                
+                document.getElementById(containerId).innerHTML = html;
+            })
+            .catch(error => {
+                document.getElementById(containerId).innerHTML = `
+                    <div class="alert alert-danger">
+                        Erro ao carregar endpoints de API: ${error.message || 'Erro desconhecido'}
+                    </div>
+                `;
+            });
+    }
     
     // Create webhook event
     createWebhookBtn.addEventListener('click', createWebhook);
@@ -160,7 +227,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const sessionId = webhookSessionSelect.value;
         const url = document.getElementById('webhook-url').value.trim();
         const isActive = document.getElementById('webhook-active').checked;
-        const headersInput = document.getElementById('webhook-headers').value.trim();
         
         // Collect selected events
         const events = [];
@@ -174,23 +240,12 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Validate and parse headers JSON if provided
-        let headers = {};
-        if (headersInput) {
-            try {
-                headers = JSON.parse(headersInput);
-            } catch (error) {
-                showToast('Invalid JSON format for headers', 'danger');
-                return;
-            }
-        }
-        
         const webhookData = {
             name,
             session_id: parseInt(sessionId),
             url,
             events,
-            headers,
+            headers: {}, // Usando objeto vazio para headers
             is_active: isActive
         };
         
@@ -219,7 +274,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const sessionId = editWebhookSessionSelect.value;
         const url = document.getElementById('edit-webhook-url').value.trim();
         const isActive = document.getElementById('edit-webhook-active').checked;
-        const headersInput = document.getElementById('edit-webhook-headers').value.trim();
         
         // Collect selected events
         const events = [];
@@ -232,24 +286,13 @@ document.addEventListener('DOMContentLoaded', function() {
             showToast('Name, Session, and URL are required', 'danger');
             return;
         }
-        
-        // Validate and parse headers JSON if provided
-        let headers = {};
-        if (headersInput) {
-            try {
-                headers = JSON.parse(headersInput);
-            } catch (error) {
-                showToast('Invalid JSON format for headers', 'danger');
-                return;
-            }
-        }
-        
+                
         const webhookData = {
             name,
             session_id: parseInt(sessionId),
             url,
             events,
-            headers,
+            headers: {}, // Usando objeto vazio para headers
             is_active: isActive
         };
         
@@ -329,12 +372,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     checkbox.checked = webhook.events.includes(checkbox.value);
                 });
                 
-                // Set the headers
-                if (webhook.headers && Object.keys(webhook.headers).length > 0) {
-                    document.getElementById('edit-webhook-headers').value = JSON.stringify(webhook.headers, null, 2);
-                } else {
-                    document.getElementById('edit-webhook-headers').value = '';
-                }
+                // Exibir endpoints API para a sessão selecionada
+                displayApiEndpoints(webhook.session_id, 'api-endpoints-container');
                 
                 // Show the modal
                 const modal = new bootstrap.Modal(document.getElementById('editWebhookModal'));
