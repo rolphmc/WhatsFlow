@@ -87,10 +87,22 @@
                                 message_ack
                                 <span class="badge bg-primary rounded-pill">Read receipt</span>
                             </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                send_text
+                                <span class="badge bg-success rounded-pill">Send text API</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                seen
+                                <span class="badge bg-success rounded-pill">Message seen</span>
+                            </li>
                         </ul>
                     </div>
                     <div class="col-md-6">
                         <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                typing
+                                <span class="badge bg-success rounded-pill">Start typing</span>
+                            </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 group_join
                                 <span class="badge bg-primary rounded-pill">Group join</span>
@@ -155,6 +167,12 @@
                                         message_create (Sent messages)
                                     </label>
                                 </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="send_text" id="event-send-text" checked>
+                                    <label class="form-check-label" for="event-send-text">
+                                        send_text (Send text API)
+                                    </label>
+                                </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-check">
@@ -164,9 +182,15 @@
                                     </label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="qr" id="event-qr">
-                                    <label class="form-check-label" for="event-qr">
-                                        qr (QR code generated)
+                                    <input class="form-check-input" type="checkbox" value="seen" id="event-seen" checked>
+                                    <label class="form-check-label" for="event-seen">
+                                        seen (Message seen)
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="typing" id="event-typing" checked>
+                                    <label class="form-check-label" for="event-typing">
+                                        typing (Start typing)
                                     </label>
                                 </div>
                             </div>
@@ -181,6 +205,12 @@
                                     <input class="form-check-input" type="checkbox" value="group_leave" id="event-group-leave" checked>
                                     <label class="form-check-label" for="event-group-leave">
                                         group_leave (Group leaves)
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="qr" id="event-qr">
+                                    <label class="form-check-label" for="event-qr">
+                                        qr (QR code generated)
                                     </label>
                                 </div>
                             </div>
@@ -249,6 +279,12 @@
                                         message_create (Sent messages)
                                     </label>
                                 </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="send_text" id="edit-event-send-text">
+                                    <label class="form-check-label" for="edit-event-send-text">
+                                        send_text (Send text API)
+                                    </label>
+                                </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-check">
@@ -258,9 +294,15 @@
                                     </label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="qr" id="edit-event-qr">
-                                    <label class="form-check-label" for="edit-event-qr">
-                                        qr (QR code generated)
+                                    <input class="form-check-input" type="checkbox" value="seen" id="edit-event-seen">
+                                    <label class="form-check-label" for="edit-event-seen">
+                                        seen (Message seen)
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="typing" id="edit-event-typing">
+                                    <label class="form-check-label" for="edit-event-typing">
+                                        typing (Start typing)
                                     </label>
                                 </div>
                             </div>
@@ -275,6 +317,12 @@
                                     <input class="form-check-input" type="checkbox" value="group_leave" id="edit-event-group-leave">
                                     <label class="form-check-label" for="edit-event-group-leave">
                                         group_leave (Group leaves)
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="qr" id="edit-event-qr">
+                                    <label class="form-check-label" for="edit-event-qr">
+                                        qr (QR code generated)
                                     </label>
                                 </div>
                             </div>
