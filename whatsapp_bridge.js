@@ -132,7 +132,8 @@ client.on('auth_failure', (msg) => {
 // Ready event
 client.on('ready', () => {
     console.log('WhatsApp client is ready');
-    updateSessionStatus('connected');
+    // Atualizar o status e limpar o QR code quando conectado
+    updateSessionStatus('connected', null, 'connected'); // null para o QR code e 'connected' para os dados de sessão
 });
 
 // Disconnected event
