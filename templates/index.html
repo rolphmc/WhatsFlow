@@ -3,8 +3,8 @@
 {% block content %}
 <div class="row">
     <div class="col-md-8 offset-md-2 text-center mb-5">
-        <h1 class="display-4 mb-4">WhatsApp Web Integration</h1>
-        <p class="lead">Manage WhatsApp Web sessions and configure n8n webhooks for automation</p>
+        <h1 class="display-4 mb-4">Integração WhatsApp Web</h1>
+        <p class="lead">Gerencie sessões do WhatsApp Web e configure webhooks n8n para automação</p>
     </div>
 </div>
 
@@ -12,15 +12,15 @@
     <div class="col-md-6">
         <div class="card shadow">
             <div class="card-body">
-                <h2 class="card-title"><i class="fab fa-whatsapp me-2"></i>WhatsApp Session Management</h2>
-                <p class="card-text">Create and manage multiple WhatsApp sessions. Track status and get real-time notifications.</p>
-                <a href="{{ url_for('list_sessions') }}" class="btn btn-primary">Manage Sessions</a>
+                <h2 class="card-title"><i class="fab fa-whatsapp me-2"></i>Gerenciamento de Sessões WhatsApp</h2>
+                <p class="card-text">Crie e gerencie múltiplas sessões do WhatsApp. Acompanhe o status e receba notificações em tempo real.</p>
+                <a href="{{ url_for('list_sessions') }}" class="btn btn-primary">Gerenciar Sessões</a>
                 
                 <div class="mt-4">
-                    <h5>Active Sessions</h5>
+                    <h5>Sessões Ativas</h5>
                     <div id="active-sessions-count" class="d-flex align-items-center">
                         <div class="spinner-border spinner-border-sm me-2" role="status"></div>
-                        Loading...
+                        Carregando...
                     </div>
                 </div>
             </div>
@@ -31,15 +31,15 @@
     <div class="col-md-6">
         <div class="card shadow">
             <div class="card-body">
-                <h2 class="card-title"><i class="fa fa-plug me-2"></i>Webhook Integration</h2>
-                <p class="card-text">Configure webhooks to connect WhatsApp events with n8n workflows for automation.</p>
-                <a href="{{ url_for('list_webhooks') }}" class="btn btn-primary">Manage Webhooks</a>
+                <h2 class="card-title"><i class="fa fa-plug me-2"></i>Integração de Webhooks</h2>
+                <p class="card-text">Configure webhooks para conectar eventos do WhatsApp com fluxos de trabalho n8n para automação.</p>
+                <a href="{{ url_for('list_webhooks') }}" class="btn btn-primary">Gerenciar Webhooks</a>
                 
                 <div class="mt-4">
-                    <h5>Active Webhooks</h5>
+                    <h5>Webhooks Ativos</h5>
                     <div id="active-webhooks-count" class="d-flex align-items-center">
                         <div class="spinner-border spinner-border-sm me-2" role="status"></div>
-                        Loading...
+                        Carregando...
                     </div>
                 </div>
             </div>
@@ -52,32 +52,32 @@
     <div class="col-md-12">
         <div class="card shadow">
             <div class="card-body">
-                <h3 class="card-title mb-4">How It Works</h3>
+                <h3 class="card-title mb-4">Como Funciona</h3>
                 <div class="row">
                     <div class="col-md-4 text-center mb-3">
                         <div class="card-icon mb-3">
                             <i class="fas fa-mobile-alt"></i>
                         </div>
-                        <h5>1. Create WhatsApp Session</h5>
-                        <p>Create a named session, scan the QR code with your WhatsApp mobile app to authenticate.</p>
+                        <h5>1. Crie uma Sessão WhatsApp</h5>
+                        <p>Crie uma sessão com nome, escaneie o QR code com seu aplicativo WhatsApp no celular para autenticar.</p>
                     </div>
                     <div class="col-md-4 text-center mb-3">
                         <div class="card-icon mb-3">
                             <i class="fas fa-link"></i>
                         </div>
                         <h5>2. Configure Webhooks</h5>
-                        <p>Set up webhooks to listen for WhatsApp events and forward them to n8n workflows.</p>
+                        <p>Configure webhooks para escutar eventos do WhatsApp e encaminhá-los para fluxos de trabalho n8n.</p>
                     </div>
                     <div class="col-md-4 text-center mb-3">
                         <div class="card-icon mb-3">
                             <i class="fas fa-cogs"></i>
                         </div>
-                        <h5>3. Automate with n8n</h5>
-                        <p>Build n8n workflows that respond to WhatsApp messages and events automatically.</p>
+                        <h5>3. Automatize com n8n</h5>
+                        <p>Construa fluxos de trabalho n8n que respondem a mensagens e eventos do WhatsApp automaticamente.</p>
                     </div>
                 </div>
                 <div class="text-center mt-3">
-                    <a href="{{ url_for('list_sessions') }}" class="btn btn-lg btn-primary">Get Started</a>
+                    <a href="{{ url_for('list_sessions') }}" class="btn btn-lg btn-primary">Começar</a>
                 </div>
             </div>
         </div>
@@ -97,12 +97,12 @@
                 const sessionsElement = document.getElementById('active-sessions-count');
                 sessionsElement.innerHTML = `
                     <span class="badge bg-success me-2">${activeCount}</span> 
-                    <span>${activeCount} active out of ${totalCount} total sessions</span>
+                    <span>${activeCount} ativa(s) de um total de ${totalCount} sessões</span>
                 `;
             })
             .catch(error => {
                 console.error('Error fetching sessions:', error);
-                document.getElementById('active-sessions-count').textContent = 'Error loading sessions';
+                document.getElementById('active-sessions-count').textContent = 'Erro ao carregar sessões';
             });
 
         // Fetch webhooks count
@@ -114,12 +114,12 @@
                 const webhooksElement = document.getElementById('active-webhooks-count');
                 webhooksElement.innerHTML = `
                     <span class="badge bg-success me-2">${activeCount}</span> 
-                    <span>${activeCount} active out of ${totalCount} total webhooks</span>
+                    <span>${activeCount} ativo(s) de um total de ${totalCount} webhooks</span>
                 `;
             })
             .catch(error => {
                 console.error('Error fetching webhooks:', error);
-                document.getElementById('active-webhooks-count').textContent = 'Error loading webhooks';
+                document.getElementById('active-webhooks-count').textContent = 'Erro ao carregar webhooks';
             });
     });
 </script>
