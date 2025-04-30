@@ -80,12 +80,12 @@
 </div>
 
 <!-- Create Webhook Modal -->
-<div class="modal fade" id="createWebhookModal" tabindex="-1" aria-labelledby="createWebhookModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+<div class="modal fade" id="createWebhookModal" tabindex="-1" aria-labelledby="createWebhookModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="createWebhookModalLabel">Criar Novo Webhook</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form id="create-webhook-form">
@@ -129,13 +129,13 @@
                                         </label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="message_revoke_everyone" id="event-message-revoke-everyone" checked>
+                                        <input class="form-check-input" type="checkbox" value="message_revoke_everyone" id="event-message-revoke-everyone">
                                         <label class="form-check-label" for="event-message-revoke-everyone" data-bs-toggle="tooltip" title="Dispara quando uma mensagem é apagada para todos">
                                             message_revoke_everyone (Mensagem apagada)
                                         </label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="message_revoke_me" id="event-message-revoke-me" checked>
+                                        <input class="form-check-input" type="checkbox" value="message_revoke_me" id="event-message-revoke-me">
                                         <label class="form-check-label" for="event-message-revoke-me" data-bs-toggle="tooltip" title="Dispara quando uma mensagem é apagada para você">
                                             message_revoke_me (Mensagem apagada para mim)
                                         </label>
@@ -148,7 +148,7 @@
                                         </label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="message_reaction" id="event-message-reaction" checked>
+                                        <input class="form-check-input" type="checkbox" value="message_reaction" id="event-message-reaction">
                                         <label class="form-check-label" for="event-message-reaction" data-bs-toggle="tooltip" title="Dispara quando alguém reage a uma mensagem">
                                             message_reaction (Reações a mensagens)
                                         </label>
@@ -176,32 +176,32 @@
                                         </label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="recording" id="event-recording" checked>
+                                        <input class="form-check-input" type="checkbox" value="recording" id="event-recording">
                                         <label class="form-check-label" for="event-recording" data-bs-toggle="tooltip" title="Dispara quando alguém começa a gravar áudio">
                                             recording (Gravando áudio)
                                         </label>
                                     </div>
                                     <!-- Media e mensagens avançadas -->
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="media_uploaded" id="event-media-uploaded" checked>
+                                        <input class="form-check-input" type="checkbox" value="media_uploaded" id="event-media-uploaded">
                                         <label class="form-check-label" for="event-media-uploaded" data-bs-toggle="tooltip" title="Dispara quando uma mídia é carregada para envio">
                                             media_uploaded (Mídia carregada)
                                         </label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="poll_vote" id="event-poll-vote" checked>
+                                        <input class="form-check-input" type="checkbox" value="poll_vote" id="event-poll-vote">
                                         <label class="form-check-label" for="event-poll-vote" data-bs-toggle="tooltip" title="Dispara quando alguém vota em uma enquete">
                                             poll_vote (Voto em enquete)
                                         </label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="order" id="event-order" checked>
+                                        <input class="form-check-input" type="checkbox" value="order" id="event-order">
                                         <label class="form-check-label" for="event-order" data-bs-toggle="tooltip" title="Dispara quando um pedido é recebido (WhatsApp Business)">
                                             order (Pedido recebido)
                                         </label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="call" id="event-call" checked>
+                                        <input class="form-check-input" type="checkbox" value="call" id="event-call">
                                         <label class="form-check-label" for="event-call" data-bs-toggle="tooltip" title="Dispara quando uma chamada é recebida ou finalizada">
                                             call (Chamada recebida)
                                         </label>
@@ -489,12 +489,12 @@
 </div>
 
 <!-- Edit Webhook Modal -->
-<div class="modal fade" id="editWebhookModal" tabindex="-1" aria-labelledby="editWebhookModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+<div class="modal fade" id="editWebhookModal" tabindex="-1" aria-labelledby="editWebhookModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="editWebhookModalLabel">Editar Webhook</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form id="edit-webhook-form">
