@@ -4,6 +4,122 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Function to load API endpoints for all active sessions
+    function loadApiEndpoints() {
+        const apiEndpointsTableBody = document.getElementById('api-endpoints-table-body');
+        
+        if (!apiEndpointsTableBody) {
+            console.warn('API endpoints table body not found');
+            return;
+        }
+        
+        apiCall('/api/sessions')
+            .then(sessions => {
+                if (sessions.length === 0) {
+                    apiEndpointsTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center">
+                                Nenhuma sessão ativa encontrada. Crie uma sessão primeiro para visualizar os endpoints de API disponíveis.
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                let tableContent = '';
+                
+                sessions.forEach(session => {
+                    // Calculate the port based on session ID (same logic as in whatsapp_bridge.js)
+                    const port = 3000 + parseInt(session.id);
+                    
+                    // Generate the URLs for each API endpoint (using HTTPS for n8n compatibility)
+                    const useHttps = true; // Set to true for n8n compatibility
+                    const protocol = useHttps ? 'https' : 'http';
+                    const sendTextUrl = `${protocol}://${window.location.hostname}:${port}/api/send-text`;
+                    const seenUrl = `${protocol}://${window.location.hostname}:${port}/api/seen`;
+                    const typingUrl = `${protocol}://${window.location.hostname}:${port}/api/typing`;
+                    const webhookUrl = `${protocol}://${window.location.hostname}:${port}/api/waha-webhook`;
+                    
+                    // Add table row with copy buttons
+                    tableContent += `
+                        <tr>
+                            <td>${session.name} (ID: ${session.id})</td>
+                            <td>
+                                <div class="input-group">
+                                    <input type="text" class="form-control form-control-sm" value="${sendTextUrl}" readonly>
+                                    <button class="btn btn-sm btn-outline-primary copy-btn" data-url="${sendTextUrl}">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="input-group">
+                                    <input type="text" class="form-control form-control-sm" value="${seenUrl}" readonly>
+                                    <button class="btn btn-sm btn-outline-primary copy-btn" data-url="${seenUrl}">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="input-group">
+                                    <input type="text" class="form-control form-control-sm" value="${typingUrl}" readonly>
+                                    <button class="btn btn-sm btn-outline-primary copy-btn" data-url="${typingUrl}">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="input-group">
+                                    <input type="text" class="form-control form-control-sm" value="${webhookUrl}" readonly>
+                                    <button class="btn btn-sm btn-outline-primary copy-btn" data-url="${webhookUrl}">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                apiEndpointsTableBody.innerHTML = tableContent;
+                
+                // Add event listeners to copy buttons
+                document.querySelectorAll('.copy-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const url = this.dataset.url;
+                        navigator.clipboard.writeText(url)
+                            .then(() => {
+                                // Change button style temporarily to indicate success
+                                const originalHTML = this.innerHTML;
+                                this.innerHTML = '<i class="fas fa-check"></i>';
+                                this.classList.remove('btn-outline-primary');
+                                this.classList.add('btn-success');
+                                
+                                setTimeout(() => {
+                                    this.innerHTML = originalHTML;
+                                    this.classList.remove('btn-success');
+                                    this.classList.add('btn-outline-primary');
+                                }, 1500);
+                                
+                                showToast('URL copiada para a área de transferência');
+                            })
+                            .catch(err => {
+                                console.error('Error copying URL:', err);
+                                showToast('Falha ao copiar URL', 'danger');
+                            });
+                    });
+                });
+            })
+            .catch(error => {
+                console.error('Error loading sessions for API endpoints:', error);
+                apiEndpointsTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center text-danger">
+                            Erro ao carregar endpoints de API: ${error.message || 'Erro desconhecido'}
+                        </td>
+                    </tr>
+                `;
+            });
+    }
     // Elements
     const sessionsTableBody = document.getElementById('sessions-table-body');
     const createSessionBtn = document.getElementById('create-session-btn');
@@ -27,6 +143,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Load all sessions when page loads
     loadSessions();
+    
+    // Load API endpoints
+    loadApiEndpoints();
     
     // Set up polling for status updates
     setInterval(loadSessions, 10000);
@@ -64,7 +183,7 @@ document.addEventListener('DOMContentLoaded', function() {
             sessionsTableBody.innerHTML = `
                 <tr>
                     <td colspan="6" class="text-center">
-                        No sessions found. Create your first WhatsApp session to get started.
+                        Nenhuma sessão encontrada. Crie sua primeira sessão do WhatsApp para começar.
                     </td>
                 </tr>
             `;
@@ -92,17 +211,17 @@ document.addEventListener('DOMContentLoaded', function() {
                             </button>` : ''}
                         ${session.status === 'disconnected' ? 
                             `<button class="btn btn-sm btn-success restart-session-btn" data-session-id="${session.id}">
-                                <i class="fas fa-play"></i> Start
+                                <i class="fas fa-play"></i> Iniciar
                             </button>` : ''}
                         ${session.status === 'connected' ? 
                             `<button class="btn btn-sm btn-warning restart-session-btn" data-session-id="${session.id}">
-                                <i class="fas fa-sync"></i> Restart
+                                <i class="fas fa-sync"></i> Reiniciar
                             </button>` : ''}
                         <button class="btn btn-sm btn-primary edit-session-btn" data-session-id="${session.id}" data-session-name="${session.name}" data-session-description="${session.description || ''}">
-                            <i class="fas fa-edit"></i> Edit
+                            <i class="fas fa-edit"></i> Editar
                         </button>
                         <button class="btn btn-sm btn-danger delete-session-btn" data-session-id="${session.id}" data-session-name="${session.name}">
-                            <i class="fas fa-trash"></i> Delete
+                            <i class="fas fa-trash"></i> Excluir
                         </button>
                     </td>
                 </tr>
@@ -246,7 +365,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="spinner-border" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
-            <p>Loading QR code...</p>
+            <p>Carregando QR code...</p>
         `;
         
         qrCodeModal.show();
