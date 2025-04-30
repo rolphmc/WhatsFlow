@@ -45,6 +45,97 @@
     </div>
 </div>
 
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">API Endpoints for n8n Integration</h5>
+                <span class="badge bg-info">Similar to waha.devlike.pro</span>
+            </div>
+            <div class="card-body">
+                <p class="lead">Use these endpoints in your n8n workflows to send commands to WhatsApp:</p>
+                <div class="table-responsive">
+                    <table class="table table-hover" id="api-endpoints-table">
+                        <thead>
+                            <tr>
+                                <th>Session</th>
+                                <th>Send Text API URL</th>
+                                <th>Seen API URL</th>
+                                <th>Typing API URL</th>
+                                <th>Webhook Receiver URL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="api-endpoints-table-body">
+                            <tr>
+                                <td colspan="5" class="text-center">
+                                    <div class="d-flex justify-content-center align-items-center">
+                                        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                                        Loading API endpoints...
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mt-4">
+                    <h6>How to use these endpoints:</h6>
+                    <div class="accordion" id="endpointExamples">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingSendText">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSendText" aria-expanded="false" aria-controls="collapseSendText">
+                                    Send Text Example
+                                </button>
+                            </h2>
+                            <div id="collapseSendText" class="accordion-collapse collapse" aria-labelledby="headingSendText" data-bs-parent="#endpointExamples">
+                                <div class="accordion-body">
+                                    <p>To send a text message, make a POST request with this JSON body:</p>
+                                    <pre><code>{
+  "chatId": "5511999999999@c.us",
+  "message": "Hello from n8n!"
+}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingSeen">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSeen" aria-expanded="false" aria-controls="collapseSeen">
+                                    Mark as Seen Example
+                                </button>
+                            </h2>
+                            <div id="collapseSeen" class="accordion-collapse collapse" aria-labelledby="headingSeen" data-bs-parent="#endpointExamples">
+                                <div class="accordion-body">
+                                    <p>To mark a chat as seen, make a POST request with this JSON body:</p>
+                                    <pre><code>{
+  "chatId": "5511999999999@c.us"
+}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingTyping">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTyping" aria-expanded="false" aria-controls="collapseTyping">
+                                    Start Typing Example
+                                </button>
+                            </h2>
+                            <div id="collapseTyping" class="accordion-collapse collapse" aria-labelledby="headingTyping" data-bs-parent="#endpointExamples">
+                                <div class="accordion-body">
+                                    <p>To start typing in a chat, make a POST request with this JSON body:</p>
+                                    <pre><code>{
+  "chatId": "5511999999999@c.us",
+  "duration": 3000
+}</code></pre>
+                                    <p class="text-muted">Note: duration is in milliseconds and is optional (default: 3000ms)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <div class="col-md-6">
         <div class="card shadow">

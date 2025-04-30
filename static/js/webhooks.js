@@ -22,6 +22,9 @@ document.addEventListener('DOMContentLoaded', function() {
     loadWebhooks();
     loadSessions();
     
+    // Load API endpoints
+    loadApiEndpoints();
+    
     // Create webhook event
     createWebhookBtn.addEventListener('click', createWebhook);
     
@@ -355,5 +358,115 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const modal = new bootstrap.Modal(document.getElementById('deleteWebhookModal'));
         modal.show();
+    }
+    
+    // Function to load API endpoints for all active sessions
+    function loadApiEndpoints() {
+        const apiEndpointsTableBody = document.getElementById('api-endpoints-table-body');
+        
+        apiCall('/api/sessions')
+            .then(sessions => {
+                if (sessions.length === 0) {
+                    apiEndpointsTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center">
+                                No active sessions found. Create a session first to view available API endpoints.
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                let tableContent = '';
+                
+                sessions.forEach(session => {
+                    // Calculate the port based on session ID (same logic as in whatsapp_bridge.js)
+                    const port = 3000 + parseInt(session.id);
+                    
+                    // Generate the URLs for each API endpoint
+                    const sendTextUrl = `http://${window.location.hostname}:${port}/api/send-text`;
+                    const seenUrl = `http://${window.location.hostname}:${port}/api/seen`;
+                    const typingUrl = `http://${window.location.hostname}:${port}/api/typing`;
+                    const webhookUrl = `http://${window.location.hostname}:${port}/api/waha-webhook`;
+                    
+                    // Add table row with copy buttons
+                    tableContent += `
+                        <tr>
+                            <td>${session.name} (ID: ${session.id})</td>
+                            <td>
+                                <div class="input-group">
+                                    <input type="text" class="form-control form-control-sm" value="${sendTextUrl}" readonly>
+                                    <button class="btn btn-sm btn-outline-primary copy-btn" data-url="${sendTextUrl}">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="input-group">
+                                    <input type="text" class="form-control form-control-sm" value="${seenUrl}" readonly>
+                                    <button class="btn btn-sm btn-outline-primary copy-btn" data-url="${seenUrl}">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="input-group">
+                                    <input type="text" class="form-control form-control-sm" value="${typingUrl}" readonly>
+                                    <button class="btn btn-sm btn-outline-primary copy-btn" data-url="${typingUrl}">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="input-group">
+                                    <input type="text" class="form-control form-control-sm" value="${webhookUrl}" readonly>
+                                    <button class="btn btn-sm btn-outline-primary copy-btn" data-url="${webhookUrl}">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                apiEndpointsTableBody.innerHTML = tableContent;
+                
+                // Add event listeners to copy buttons
+                document.querySelectorAll('.copy-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const url = this.dataset.url;
+                        navigator.clipboard.writeText(url)
+                            .then(() => {
+                                // Change button style temporarily to indicate success
+                                const originalHTML = this.innerHTML;
+                                this.innerHTML = '<i class="fas fa-check"></i>';
+                                this.classList.remove('btn-outline-primary');
+                                this.classList.add('btn-success');
+                                
+                                setTimeout(() => {
+                                    this.innerHTML = originalHTML;
+                                    this.classList.remove('btn-success');
+                                    this.classList.add('btn-outline-primary');
+                                }, 1500);
+                                
+                                showToast('URL copied to clipboard');
+                            })
+                            .catch(err => {
+                                console.error('Error copying URL:', err);
+                                showToast('Failed to copy URL', 'danger');
+                            });
+                    });
+                });
+            })
+            .catch(error => {
+                console.error('Error loading sessions for API endpoints:', error);
+                apiEndpointsTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center text-danger">
+                            Error loading API endpoints: ${error.message || 'Unknown error'}
+                        </td>
+                    </tr>
+                `;
+            });
     }
 });
