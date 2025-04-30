@@ -1,0 +1,149 @@
+/* Custom styles for WhatsApp Web Integration */
+
+/* Status indicators */
+.status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.status-indicator.connected {
+    background-color: #4caf50;
+    box-shadow: 0 0 5px #4caf50;
+}
+
+.status-indicator.disconnected {
+    background-color: #f44336;
+}
+
+.status-indicator.connecting {
+    background-color: #ff9800;
+    animation: pulse 1.5s infinite;
+}
+
+.status-indicator.qr-code {
+    background-color: #2196f3;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.4;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Dashboard cards */
+.dashboard-img {
+    max-height: 200px;
+    object-fit: cover;
+}
+
+/* Card icons */
+.card-icon {
+    font-size: 2.5rem;
+    color: var(--bs-primary);
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+/* QR code display */
+#qr-code-display {
+    margin: 20px auto;
+    text-align: center;
+}
+
+/* Webhook events badges */
+.event-badge {
+    margin-right: 5px;
+    margin-bottom: 5px;
+    font-size: 0.8rem;
+}
+
+/* Add some space for the footer */
+.footer {
+    background-color: rgba(var(--bs-dark-rgb), 0.95);
+    color: var(--bs-light);
+}
+
+/* Custom table styles */
+.table {
+    vertical-align: middle;
+}
+
+/* Badge sizing */
+.badge {
+    font-size: 0.75rem;
+    font-weight: normal;
+}
+
+/* Container spacing */
+.container {
+    padding-bottom: 2rem;
+}
+
+/* Card shadows and borders */
+.card {
+    border: none;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    background-color: rgba(var(--bs-dark-rgb), 0.05);
+    border-bottom: 1px solid rgba(var(--bs-dark-rgb), 0.125);
+}
+
+.shadow {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+/* Navbar customization */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: var(--bs-dark);
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+
+/* QR code container */
+#qr-code-container {
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    display: inline-block;
+    margin: 0 auto;
+}
+
+/* Make action buttons in tables more consistent */
+.action-buttons .btn {
+    margin-right: 5px;
+}
+
+/* Style for code snippets */
+pre {
+    background-color: var(--bs-dark);
+    color: var(--bs-light);
+    padding: 15px;
+    border-radius: 5px;
+    overflow-x: auto;
+}
+
+/* Override Bootstrap dark mode text */
+body {
+    color: var(--bs-light);
+}
