@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: whatsapp_password
+      POSTGRES_USER: whatsapp_user
+      POSTGRES_DB: whatsapp_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - whatsapp_net
+
+  web:
+    build: .
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgresql://whatsapp_user:whatsapp_password@postgres:5432/whatsapp_db
+      FLASK_SECRET_KEY: your_secret_key_here
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "5000:5000"
+      - "3001-3010:3001-3010"  # Portas para os bridges do WhatsApp
+    volumes:
+      - ./.wwebjs_auth:/app/.wwebjs_auth  # Persistir sessões do WhatsApp
+      - ./.wwebjs_cache:/app/.wwebjs_cache
+    networks:
+      - whatsapp_net
+
+networks:
+  whatsapp_net:
+    driver: bridge
+
+volumes:
+  postgres_data:
