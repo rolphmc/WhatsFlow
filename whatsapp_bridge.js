@@ -72,19 +72,67 @@ async function sendWebhookEvent(eventType, data) {
             return;
         }
         
-        // Prepare the event payload
-        const payload = {
-            event: eventType,
-            sessionId: parseInt(sessionId),
-            timestamp: new Date().toISOString(),
-            data
-        };
-        
-        // Send the event to each webhook
+        // Send the event to each webhook with processed data for each webhook's settings
         console.log(`Sending ${eventType} event to ${webhooks.length} webhooks`);
         
         for (const webhook of webhooks) {
             try {
+                // Clone the original data to avoid modifying it between webhooks
+                const processedData = {...data};
+                
+                // Check if this event is a message event type with potential message properties selected
+                if (eventType === 'message' || eventType === 'message_create' || eventType === 'message_ack') {
+                    // Check if the original message object is available in the context
+                    // This applies to places where we're handling a raw message object
+                    const messageObj = data._messageObj || data.message || null;
+                    
+                    // Process additional message properties based on webhook configuration
+                    if (messageObj && typeof messageObj === 'object') {
+                        console.log(`Processing additional message properties for webhook ${webhook.id}`);
+                        
+                        // Map of msg_ prefixed event names to actual Message object properties
+                        const propMapping = {
+                            'msg_id': 'id',
+                            'msg_body': 'body',
+                            'msg_type': 'type',
+                            'msg_timestamp': 'timestamp',
+                            'msg_from': 'from',
+                            'msg_to': 'to',
+                            'msg_author': 'author',
+                            'msg_fromMe': 'fromMe',
+                            'msg_hasMedia': 'hasMedia',
+                            'msg_isForwarded': 'isForwarded',
+                            'msg_isStatus': 'isStatus',
+                            'msg_isStarred': 'isStarred',
+                            'msg_broadcast': 'broadcast',
+                            'msg_mentionedIds': 'mentionedIds',
+                            'msg_vCards': 'vCards',
+                            'msg_location': 'location',
+                            'msg_hasQuotedMsg': 'hasQuotedMsg',
+                            'msg_duration': 'duration',
+                            'msg_mimetype': 'mimetype',
+                            'msg_caption': 'caption',
+                            'msg_filename': 'filename',
+                            'msg_links': 'links'
+                        };
+                        
+                        // Add any selected properties to the processed data
+                        for (const [eventProp, msgProp] of Object.entries(propMapping)) {
+                            if (webhook.events.includes(eventProp) && messageObj[msgProp] !== undefined) {
+                                processedData[msgProp] = messageObj[msgProp];
+                            }
+                        }
+                    }
+                }
+                
+                // Prepare the event payload with processed data
+                const payload = {
+                    event: eventType,
+                    sessionId: parseInt(sessionId),
+                    timestamp: new Date().toISOString(),
+                    data: processedData
+                };
+                
                 const headers = webhook.headers || {};
                 await axios.post(webhook.url, payload, { headers });
                 console.log(`Event ${eventType} sent to webhook ${webhook.id} (${webhook.name})`);
@@ -146,7 +194,7 @@ client.on('disconnected', (reason) => {
 client.on('message', async (message) => {
     console.log(`New message received: ${message.body}`);
     
-    // Format message data for webhook
+    // Format basic message data for webhook
     const messageData = {
         id: message.id.id,
         body: message.body,
@@ -154,7 +202,9 @@ client.on('message', async (message) => {
         to: message.to,
         fromMe: message.fromMe,
         hasMedia: message.hasMedia,
-        timestamp: message.timestamp
+        timestamp: message.timestamp,
+        // Store the original message object to extract additional properties if needed
+        _messageObj: message
     };
     
     // If it has mentions, include them
@@ -162,7 +212,7 @@ client.on('message', async (message) => {
         messageData.mentionedIds = message.mentionedIds;
     }
     
-    // Send webhook event
+    // Send webhook event with the complete message object for property extraction
     await sendWebhookEvent('message', messageData);
 });
 
@@ -178,7 +228,9 @@ client.on('message_create', async (message) => {
             from: message.from,
             to: message.to,
             fromMe: message.fromMe,
-            timestamp: message.timestamp
+            timestamp: message.timestamp,
+            // Store the original message object to extract additional properties if needed
+            _messageObj: message
         };
         
         // Send webhook event
