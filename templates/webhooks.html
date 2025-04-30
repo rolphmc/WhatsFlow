@@ -48,76 +48,30 @@
 
 
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-12">
         <div class="card shadow">
             <div class="card-header">
                 <h5 class="mb-0">n8n Webhook Integration</h5>
             </div>
             <div class="card-body">
-                <p>Using webhooks, you can connect WhatsApp events to n8n workflows:</p>
-                <ol>
-                    <li>Create a webhook in n8n with the "Webhook" trigger node</li>
-                    <li>Copy the n8n webhook URL</li> 
-                    <li>Create a webhook here and paste the n8n URL</li>
-                    <li>Select the WhatsApp events you want to trigger the workflow</li>
-                </ol>
-                <p>Your n8n workflow will receive a JSON payload with WhatsApp event data when the selected events occur.</p>
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle me-2"></i>
-                    For best results, create a separate webhook for each type of automation workflow.
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="card shadow">
-            <img src="https://images.unsplash.com/photo-1518757632508-b8e0453cc296" class="card-img-top" alt="Webhook concept illustration">
-            <div class="card-body">
-                <h5 class="card-title">Available Webhook Events</h5>
                 <div class="row">
-                    <div class="col-md-6">
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                message
-                                <span class="badge bg-primary rounded-pill">New message</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                message_create
-                                <span class="badge bg-primary rounded-pill">Message sent</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                message_ack
-                                <span class="badge bg-primary rounded-pill">Read receipt</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                send_text
-                                <span class="badge bg-success rounded-pill">Send text API</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                seen
-                                <span class="badge bg-success rounded-pill">Message seen</span>
-                            </li>
-                        </ul>
+                    <div class="col-md-8">
+                        <p>Using webhooks, you can connect WhatsApp events to n8n workflows:</p>
+                        <ol>
+                            <li>Create a webhook in n8n with the "Webhook" trigger node</li>
+                            <li>Copy the n8n webhook URL</li> 
+                            <li>Create a webhook here and paste the n8n URL</li>
+                            <li>Select the WhatsApp events you want to trigger the workflow</li>
+                        </ol>
+                        <p>Your n8n workflow will receive a JSON payload with WhatsApp event data when the selected events occur.</p>
                     </div>
-                    <div class="col-md-6">
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                typing
-                                <span class="badge bg-success rounded-pill">Start typing</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                group_join
-                                <span class="badge bg-primary rounded-pill">Group join</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                group_leave
-                                <span class="badge bg-primary rounded-pill">Group leave</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                qr
-                                <span class="badge bg-primary rounded-pill">QR code</span>
-                            </li>
-                        </ul>
+                    <div class="col-md-4">
+                        <div class="alert alert-info h-100 d-flex align-items-center">
+                            <div>
+                                <i class="fas fa-info-circle me-2 fa-2x float-start me-3"></i>
+                                For best results, create a separate webhook for each type of automation workflow. Each webhook can be configured with specific events to trigger different n8n workflows.
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -307,7 +261,7 @@
                     <div class="mb-3">
                         <label class="form-label">Endpoints de API para Integração n8n</label>
                         <div class="alert alert-info">
-                            <span class="badge bg-info me-2">Similar ao waha.devlike.pro</span>
+                            <i class="fas fa-info-circle me-2"></i>
                             Use estes endpoints nos seus fluxos de trabalho n8n para enviar comandos ao WhatsApp
                         </div>
                         
@@ -566,7 +520,7 @@
                     <div class="mb-3">
                         <label class="form-label">Endpoints de API para Integração n8n</label>
                         <div class="alert alert-info">
-                            <span class="badge bg-info me-2">Similar ao waha.devlike.pro</span>
+                            <i class="fas fa-info-circle me-2"></i>
                             Use estes endpoints nos seus fluxos de trabalho n8n para enviar comandos ao WhatsApp
                         </div>
                         
