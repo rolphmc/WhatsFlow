@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const description = sessionDescriptionInput.value.trim();
         
         if (!name) {
-            showToast('Session name is required', 'danger');
+            showToast('Nome da sessão é obrigatório', 'danger');
             return;
         }
         
@@ -265,7 +265,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         apiCall('/api/sessions', 'POST', sessionData)
             .then(response => {
-                showToast('Session created successfully');
+                showToast('Sessão criada com sucesso');
                 
                 // Check for QR code
                 selectedSessionId = response.id;
@@ -281,7 +281,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error creating session:', error);
-                showToast(`Error creating session: ${error.message}`, 'danger');
+                showToast(`Erro ao criar sessão: ${error.message}`, 'danger');
             });
     }
     
@@ -292,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const description = editSessionDescriptionInput.value.trim();
         
         if (!name) {
-            showToast('Session name is required', 'danger');
+            showToast('Nome da sessão é obrigatório', 'danger');
             return;
         }
         
@@ -303,7 +303,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         apiCall(`/api/sessions/${sessionId}`, 'PUT', sessionData)
             .then(response => {
-                showToast('Session updated successfully');
+                showToast('Sessão atualizada com sucesso');
                 
                 // Close modal
                 editSessionModal.hide();
@@ -313,7 +313,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error updating session:', error);
-                showToast(`Error updating session: ${error.message}`, 'danger');
+                showToast(`Erro ao atualizar sessão: ${error.message}`, 'danger');
             });
     }
     
@@ -323,7 +323,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         apiCall(`/api/sessions/${selectedSessionId}`, 'DELETE')
             .then(response => {
-                showToast('Session deleted successfully');
+                showToast('Sessão excluída com sucesso');
                 
                 // Close modal
                 deleteSessionModal.hide();
@@ -333,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error deleting session:', error);
-                showToast(`Error deleting session: ${error.message}`, 'danger');
+                showToast(`Erro ao excluir sessão: ${error.message}`, 'danger');
             });
     }
     
@@ -343,7 +343,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         apiCall(`/api/sessions/${sessionId}/restart`, 'POST')
             .then(response => {
-                showToast('Session restarted successfully');
+                showToast('Sessão reiniciada com sucesso');
                 loadSessions();
                 
                 // Check for QR code
@@ -352,7 +352,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error restarting session:', error);
-                showToast(`Error restarting session: ${error.message}`, 'danger');
+                showToast(`Erro ao reiniciar sessão: ${error.message}`, 'danger');
             });
     }
     
