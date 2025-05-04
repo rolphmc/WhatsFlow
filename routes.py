@@ -2,10 +2,13 @@ import json
 import logging
 import subprocess
 import os
-import requests
 from flask import render_template, request, jsonify, redirect, url_for, flash
 from app import app, db
 from models import WhatsAppSession, Webhook
+import urllib.request
+import urllib.error
+import json
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -257,3 +260,15 @@ def send_text_message(session_id):
     except Exception as e:
         logger.error(f"Error sending message: {str(e)}")
         return jsonify({"error": str(e)}), 500
+
+# Endpoint de teste para listar rotas
+@app.route('/api/debug/routes')
+def list_routes():
+    routes = []
+    for rule in app.url_map.iter_rules():
+        routes.append({
+            "endpoint": rule.endpoint,
+            "methods": [m for m in rule.methods if m not in ('HEAD', 'OPTIONS')],
+            "path": str(rule)
+        })
+    return jsonify(routes)

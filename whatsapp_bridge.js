@@ -58,6 +58,10 @@ const client = new Client({
     }
  });
 
+ // Logs docker-compose logs web --tail=100inicialização do cliente
+console.log('Iniciando navegador Puppeteer...');
+console.log('Configurações do Puppeteer:', JSON.stringify(client.options.puppeteer, null, 2));
+
 // Function to update session status
 async function updateSessionStatus(status, qrCode = null, sessionData = null) {
     try {

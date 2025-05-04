@@ -40,6 +40,12 @@ services:
       - ./.wwebjs_cache:/app/.wwebjs_cache
     networks:
       - whatsapp_net
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
 
 networks:
   whatsapp_net:
