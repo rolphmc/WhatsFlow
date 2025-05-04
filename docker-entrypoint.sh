@@ -8,21 +8,33 @@ import sys
 import psycopg2
 import os
 try:
-    dbname = os.environ.get("DATABASE_URL")
-    conn = psycopg2.connect(dbname)
-except psycopg2.OperationalError:
+    conn_string = os.environ.get("DATABASE_URL")
+    conn = psycopg2.connect(conn_string)
+    conn.close()
+except Exception as e:
+    print(f"Erro ao conectar ao PostgreSQL: {e}", file=sys.stderr)
     sys.exit(-1)
 sys.exit(0)
 END
 }
 
 # Aguardar até que o PostgreSQL esteja pronto
+echo "Aguardando PostgreSQL inicializar..."
 until postgres_ready; do
-  >&2 echo "PostgreSQL não está disponível ainda - aguardando..."
-  sleep 1
+  echo "PostgreSQL não está disponível ainda - aguardando..."
+  sleep 2
 done
 
->&2 echo "PostgreSQL está pronto - continuando..."
+echo "PostgreSQL está pronto - continuando..."
+
+# Inicializar o banco de dados (opcional)
+echo "Inicializando o banco de dados..."
+python -c "
+from app import app, db
+with app.app_context():
+    db.create_all()
+"
 
 # Executar o comando passado para o script
+echo "Iniciando a aplicação..."
 exec "$@"

@@ -35,13 +35,13 @@ const client = new Client({
     }),
     puppeteer: {
         headless: true,
-        executablePath: '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium',
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', 
-               '--disable-accelerated-2d-canvas', '--no-first-run', '--no-zygote', 
-               '--disable-gpu', '--disable-infobars',
+        // Remova a linha executablePath para usar o Chromium instalado junto com Puppeteer
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage',
+               '--disable-accelerated-2d-canvas', '--no-first-run', '--no-zygote',
+               '--single-process', '--disable-gpu', '--disable-infobars',
                '--disable-extensions', '--window-size=1280,720']
     }
-});
+ }); 
 
 // Function to update session status
 async function updateSessionStatus(status, qrCode = null, sessionData = null) {
@@ -135,9 +135,10 @@ async function sendWebhookEvent(eventType, data) {
                     data: basicData
                 };
                 
-                // Adicionar cabeçalhos da requisição se a opção estiver selecionada
+                // Adicionar cabeçalhos da requisição apenas se a opção estiver selecionada
                 if (webhook.events.includes('include_headers')) {
-                    payload.headers = {
+                    // Os headers devem ser incluídos como uma propriedade dentro do objeto data
+                    payload.data.headers = {
                         'host': webhook.url.split('/')[2],
                         'user-agent': 'axios/1.9.0',
                         'content-type': 'application/json',
@@ -146,11 +147,16 @@ async function sendWebhookEvent(eventType, data) {
                 }
                 
                 const headers = webhook.headers || {};
+                const response = await axios.post(webhook.url, payload, { headers });
+
                 await axios.post(webhook.url, payload, { headers });
-                console.log(`Event ${eventType} sent to webhook ${webhook.id} (${webhook.name})`);
+                console.log(`Event ${eventType} sent to webhook ${webhook.id} (${webhook.name}) - Response: ${response.status}`);
             } catch (webhookError) {
                 console.error(`Error sending to webhook ${webhook.id}:`, webhookError.message);
-            }
+                // Adicione mais detalhes do erro
+                if (webhookError.response) {
+                    console.error(`Status: ${webhookError.response.status}, Data:`, webhookError.response.data);
+                }
         }
     } catch (error) {
         console.error('Error fetching webhooks or sending event:', error.message);

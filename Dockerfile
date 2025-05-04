@@ -2,6 +2,7 @@ FROM node:20-slim
 
 # Instalar dependências para Puppeteer e WhatsApp Web.js
 RUN apt-get update && apt-get install -y \
+    chromium \
     python3 \
     python3-pip \
     python3-venv \

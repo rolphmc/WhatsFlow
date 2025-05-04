@@ -5,25 +5,33 @@ services:
     image: postgres:16
     restart: always
     environment:
-      POSTGRES_PASSWORD: whatsapp_password
-      POSTGRES_USER: whatsapp_user
-      POSTGRES_DB: whatsapp_db
+      POSTGRES_PASSWORD: Ticoekika18.
+      POSTGRES_USER: whatsapp
+      POSTGRES_DB: whatsapp_bridge
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     networks:
       - whatsapp_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U whatsapp -d whatsapp_bridge"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   web:
     build: .
     restart: always
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://whatsapp_user:whatsapp_password@postgres:5432/whatsapp_db
-      FLASK_SECRET_KEY: your_secret_key_here
+      DATABASE_URL: postgresql://whatsapp:Ticoekika18.@postgres:5432/whatsapp_bridge
+      FLASK_SECRET_KEY: Ticoekika18.
       PYTHONUNBUFFERED: 1
+      API_HOST: web
+      API_PORT: 5000
     ports:
       - "5000:5000"
       - "3001-3010:3001-3010"  # Portas para os bridges do WhatsApp
