@@ -32,6 +32,7 @@ RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     postgresql-client \
     && apt-get clean \
+    requests \
     && rm -rf /var/lib/apt/lists/*
 
 # Configurar diretório de trabalho
