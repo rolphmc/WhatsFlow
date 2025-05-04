@@ -1,7 +1,7 @@
 /**
  * WhatsApp Web.js Bridge
  * Node.js script to bridge between Python Flask backend and WhatsApp Web.js library
- * 
+ *
  * Usage: node whatsapp_bridge.js <session_id>
  */
 
@@ -35,13 +35,32 @@ const client = new Client({
     }),
     puppeteer: {
         headless: true,
-        // Remova a linha executablePath para usar o Chromium instalado junto com Puppeteer
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage',
-               '--disable-accelerated-2d-canvas', '--no-first-run', '--no-zygote',
-               '--single-process', '--disable-gpu', '--disable-infobars',
-               '--disable-extensions', '--window-size=1280,720']
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--single-process',
+            '--disable-gpu',
+            '--disable-infobars',
+            '--disable-extensions',
+            '--disable-web-security',
+            '--window-size=1280,720',
+            '--disable-features=site-per-process',
+            '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36'
+        ],
+        defaultViewport: {
+            width: 1280,
+            height: 720
+        }
     }
- }); 
+ });
+
+ // Logs docker-compose logs web --tail=100inicialização do cliente
+console.log('Iniciando navegador Puppeteer...');
+console.log('Configurações do Puppeteer:', JSON.stringify(client.options.puppeteer, null, 2));
 
 // Function to update session status
 async function updateSessionStatus(status, qrCode = null, sessionData = null) {
@@ -49,7 +68,7 @@ async function updateSessionStatus(status, qrCode = null, sessionData = null) {
         const data = { status };
         if (qrCode) data.qr_code = qrCode;
         if (sessionData) data.session_data = sessionData;
-        
+
         await axios.post(`http://localhost:5000/api/sessions/${sessionId}/status`, data);
         console.log(`Session ${sessionId} status updated to ${status}`);
     } catch (error) {
@@ -62,33 +81,33 @@ async function sendWebhookEvent(eventType, data) {
     try {
         // Fetch all webhooks for this session
         const response = await axios.get('http://localhost:5000/api/webhooks');
-        const webhooks = response.data.filter(webhook => 
-            webhook.session_id == sessionId && 
-            webhook.is_active && 
+        const webhooks = response.data.filter(webhook =>
+            webhook.session_id == sessionId &&
+            webhook.is_active &&
             webhook.events.includes(eventType)
         );
-        
+
         if (webhooks.length === 0) {
             return;
         }
-        
+
         // Send the event to each webhook with processed data for each webhook's settings
         console.log(`Sending ${eventType} event to ${webhooks.length} webhooks`);
-        
+
         for (const webhook of webhooks) {
             try {
                 // Propriedades básicas que sempre devem estar presentes
                 let basicData = {};
-                
+
                 // Se for um dos eventos de mensagem, incluir apenas os campos selecionados
                 if (eventType === 'message' || eventType === 'message_create' || eventType === 'message_ack') {
                     // Check if the original message object is available in the context
                     const messageObj = data._messageObj || data.message || data;
-                    
+
                     // Process additional message properties based on webhook configuration
                     if (messageObj && typeof messageObj === 'object') {
                         console.log(`Processing additional message properties for webhook ${webhook.id}`);
-                        
+
                         // Map of msg_ prefixed event names to actual Message object properties
                         const propMapping = {
                             'msg_id': 'id',
@@ -114,7 +133,7 @@ async function sendWebhookEvent(eventType, data) {
                             'msg_filename': 'filename',
                             'msg_links': 'links'
                         };
-                        
+
                         // Add only selected properties to the processed data
                         for (const [eventProp, msgProp] of Object.entries(propMapping)) {
                             if (webhook.events.includes(eventProp) && messageObj[msgProp] !== undefined) {
@@ -126,7 +145,7 @@ async function sendWebhookEvent(eventType, data) {
                     // Para outros tipos de eventos, manter o payload original
                     basicData = {...data};
                 }
-                
+
                 // Prepare the event payload with processed data
                 const payload = {
                     event: eventType,
@@ -134,7 +153,7 @@ async function sendWebhookEvent(eventType, data) {
                     timestamp: new Date().toISOString(),
                     data: basicData
                 };
-                
+
                 // Adicionar cabeçalhos da requisição apenas se a opção estiver selecionada
                 if (webhook.events.includes('include_headers')) {
                     // Os headers devem ser incluídos como uma propriedade dentro do objeto data
@@ -145,7 +164,7 @@ async function sendWebhookEvent(eventType, data) {
                         'accept': 'application/json, text/plain, */*'
                     };
                 }
-                
+
                 const headers = webhook.headers || {};
                 const response = await axios.post(webhook.url, payload, { headers });
 
@@ -173,10 +192,10 @@ client.on('qr', async (qr) => {
         // Convert QR to data URL
         const qrDataURL = await qrcode.toDataURL(qr);
         console.log('QR code generated');
-        
+
         // Update session status with QR code
         await updateSessionStatus('qr_code_ready', qrDataURL);
-        
+
         // Send webhook event
         await sendWebhookEvent('qr', { qr: qr });
     } catch (error) {
@@ -212,7 +231,7 @@ client.on('disconnected', (reason) => {
 // Message event
 client.on('message', async (message) => {
     console.log(`New message received: ${message.body}`);
-    
+
     // Format basic message data for webhook
     const messageData = {
         id: message.id.id,
@@ -225,12 +244,12 @@ client.on('message', async (message) => {
         // Store the original message object to extract additional properties if needed
         _messageObj: message
     };
-    
+
     // If it has mentions, include them
     if (message.mentionedIds && message.mentionedIds.length > 0) {
         messageData.mentionedIds = message.mentionedIds;
     }
-    
+
     // Send webhook event with the complete message object for property extraction
     await sendWebhookEvent('message', messageData);
 });
@@ -239,7 +258,7 @@ client.on('message', async (message) => {
 client.on('message_create', async (message) => {
     if (message.fromMe) {
         console.log(`New message sent: ${message.body}`);
-        
+
         // Format message data for webhook
         const messageData = {
             id: message.id.id,
@@ -251,7 +270,7 @@ client.on('message_create', async (message) => {
             // Store the original message object to extract additional properties if needed
             _messageObj: message
         };
-        
+
         // Send webhook event
         await sendWebhookEvent('message_create', messageData);
     }
@@ -267,9 +286,9 @@ client.on('message_ack', async (message, ack) => {
         3: 'READ',
         4: 'PLAYED'
     };
-    
+
     console.log(`Message ACK update: ${message.body} => ${ackMap[ack]}`);
-    
+
     // Format ACK data for webhook
     const ackData = {
         id: message.id.id,
@@ -278,7 +297,7 @@ client.on('message_ack', async (message, ack) => {
         body: message.body,
         timestamp: new Date().toISOString()
     };
-    
+
     // Send webhook event
     await sendWebhookEvent('message_ack', ackData);
 });
@@ -286,7 +305,7 @@ client.on('message_ack', async (message, ack) => {
 // Group join event
 client.on('group_join', async (notification) => {
     console.log(`User ${notification.recipientIds[0]} joined group ${notification.chatId}`);
-    
+
     // Format join data for webhook
     const joinData = {
         groupId: notification.chatId,
@@ -294,7 +313,7 @@ client.on('group_join', async (notification) => {
         authorId: notification.author,
         timestamp: notification.timestamp
     };
-    
+
     // Send webhook event
     await sendWebhookEvent('group_join', joinData);
 });
@@ -302,7 +321,7 @@ client.on('group_join', async (notification) => {
 // Group leave event
 client.on('group_leave', async (notification) => {
     console.log(`User ${notification.recipientIds[0]} left group ${notification.chatId}`);
-    
+
     // Format leave data for webhook
     const leaveData = {
         groupId: notification.chatId,
@@ -310,7 +329,7 @@ client.on('group_leave', async (notification) => {
         authorId: notification.author,
         timestamp: notification.timestamp
     };
-    
+
     // Send webhook event
     await sendWebhookEvent('group_leave', leaveData);
 });
@@ -318,7 +337,7 @@ client.on('group_leave', async (notification) => {
 // Typing event (when contact starts typing)
 client.on('typing', async (chatId, typing) => {
     console.log(`Typing status update: ${chatId} is ${typing ? 'typing' : 'not typing'}`);
-    
+
     if (typing) {
         // Format typing data for webhook
         const typingData = {
@@ -326,21 +345,21 @@ client.on('typing', async (chatId, typing) => {
             isTyping: typing,
             timestamp: new Date().toISOString()
         };
-        
+
         // Send webhook event
         await sendWebhookEvent('typing', typingData);
-        
+
         // Also send to waha.devlike.pro if configured with a webhook for this event
         try {
             // Get webhook configured for waha
             const response = await axios.get('http://localhost:5000/api/webhooks');
-            const wahaWebhooks = response.data.filter(webhook => 
-                webhook.session_id == sessionId && 
-                webhook.is_active && 
+            const wahaWebhooks = response.data.filter(webhook =>
+                webhook.session_id == sessionId &&
+                webhook.is_active &&
                 webhook.url.includes('waha.devlike.pro') &&
                 webhook.events.includes('typing')
             );
-            
+
             if (wahaWebhooks.length > 0) {
                 for (const webhook of wahaWebhooks) {
                     const wahaPayload = {
@@ -349,7 +368,7 @@ client.on('typing', async (chatId, typing) => {
                         data: typingData,
                         timestamp: new Date().toISOString()
                     };
-                    
+
                     await axios.post(webhook.url, wahaPayload, { headers: webhook.headers || {} });
                     console.log(`Typing event sent to waha.devlike.pro webhook ${webhook.id}`);
                 }
@@ -363,7 +382,7 @@ client.on('typing', async (chatId, typing) => {
 // Message seen event
 client.on('message_revoke_everyone', async (message, revoked) => {
     console.log(`Message was revoked: ${message.body}`);
-    
+
     // Format seen data for webhook
     const revokeData = {
         id: message.id,
@@ -373,7 +392,7 @@ client.on('message_revoke_everyone', async (message, revoked) => {
         revokedMessage: revoked ? revoked.body : null,
         timestamp: new Date().toISOString()
     };
-    
+
     // Send webhook event
     await sendWebhookEvent('revoke', revokeData);
 });
@@ -382,27 +401,27 @@ client.on('message_revoke_everyone', async (message, revoked) => {
 client.on('chat_update', async (chat) => {
     if (chat.unreadCount === 0 && chat.lastMessage) {
         console.log(`Chat ${chat.id._serialized} was seen`);
-        
+
         // Format seen data for webhook
         const seenData = {
             chatId: chat.id._serialized,
             timestamp: new Date().toISOString()
         };
-        
+
         // Send webhook event
         await sendWebhookEvent('seen', seenData);
-        
+
         // Also send to waha.devlike.pro if configured with a webhook for this event
         try {
             // Get webhook configured for waha
             const response = await axios.get('http://localhost:5000/api/webhooks');
-            const wahaWebhooks = response.data.filter(webhook => 
-                webhook.session_id == sessionId && 
-                webhook.is_active && 
+            const wahaWebhooks = response.data.filter(webhook =>
+                webhook.session_id == sessionId &&
+                webhook.is_active &&
                 webhook.url.includes('waha.devlike.pro') &&
                 webhook.events.includes('seen')
             );
-            
+
             if (wahaWebhooks.length > 0) {
                 for (const webhook of wahaWebhooks) {
                     const wahaPayload = {
@@ -411,7 +430,7 @@ client.on('chat_update', async (chat) => {
                         data: seenData,
                         timestamp: new Date().toISOString()
                     };
-                    
+
                     await axios.post(webhook.url, wahaPayload, { headers: webhook.headers || {} });
                     console.log(`Seen event sent to waha.devlike.pro webhook ${webhook.id}`);
                 }
@@ -457,12 +476,12 @@ app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    
+
     // Handle preflight requests (OPTIONS)
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
-    
+
     next();
 });
 
@@ -473,30 +492,30 @@ app.use(bodyParser.json());
 app.post('/api/send-text', async (req, res) => {
     try {
         const { chatId, message } = req.body;
-        
+
         if (!chatId || !message) {
             return res.status(400).json({ success: false, error: 'chatId and message are required' });
         }
-        
+
         if (!client || client.info === undefined) {
             return res.status(500).json({ success: false, error: 'WhatsApp client not ready' });
         }
-        
+
         const result = await client.sendMessage(chatId, message);
         console.log(`Message sent to ${chatId}: ${message}`);
-        
+
         // Send webhook event for sent message
-        await sendWebhookEvent('send_text', { 
-            chatId, 
-            message, 
+        await sendWebhookEvent('send_text', {
+            chatId,
+            message,
             messageId: result.id._serialized,
             timestamp: new Date().toISOString()
         });
-        
-        return res.status(200).json({ 
-            success: true, 
+
+        return res.status(200).json({
+            success: true,
             messageId: result.id._serialized,
-            message: 'Message sent successfully' 
+            message: 'Message sent successfully'
         });
     } catch (error) {
         console.error('Error sending message:', error);
@@ -508,28 +527,28 @@ app.post('/api/send-text', async (req, res) => {
 app.post('/api/seen', async (req, res) => {
     try {
         const { chatId } = req.body;
-        
+
         if (!chatId) {
             return res.status(400).json({ success: false, error: 'chatId is required' });
         }
-        
+
         if (!client || client.info === undefined) {
             return res.status(500).json({ success: false, error: 'WhatsApp client not ready' });
         }
-        
+
         const chat = await client.getChatById(chatId);
         await chat.sendSeen();
         console.log(`Marked chat ${chatId} as seen`);
-        
+
         // Send webhook event for seen status
-        await sendWebhookEvent('seen', { 
-            chatId, 
+        await sendWebhookEvent('seen', {
+            chatId,
             timestamp: new Date().toISOString()
         });
-        
-        return res.status(200).json({ 
-            success: true, 
-            message: 'Chat marked as seen' 
+
+        return res.status(200).json({
+            success: true,
+            message: 'Chat marked as seen'
         });
     } catch (error) {
         console.error('Error marking chat as seen:', error);
@@ -541,35 +560,35 @@ app.post('/api/seen', async (req, res) => {
 app.post('/api/typing', async (req, res) => {
     try {
         const { chatId, duration = 3000 } = req.body;
-        
+
         if (!chatId) {
             return res.status(400).json({ success: false, error: 'chatId is required' });
         }
-        
+
         if (!client || client.info === undefined) {
             return res.status(500).json({ success: false, error: 'WhatsApp client not ready' });
         }
-        
+
         const chat = await client.getChatById(chatId);
         await chat.sendStateTyping();
         console.log(`Started typing in chat ${chatId} for ${duration}ms`);
-        
+
         // Send webhook event for typing status
-        await sendWebhookEvent('typing', { 
-            chatId, 
+        await sendWebhookEvent('typing', {
+            chatId,
             duration,
             timestamp: new Date().toISOString()
         });
-        
+
         // Stop typing after duration
         setTimeout(async () => {
             await chat.clearState();
             console.log(`Stopped typing in chat ${chatId}`);
         }, duration);
-        
-        return res.status(200).json({ 
-            success: true, 
-            message: `Started typing for ${duration}ms` 
+
+        return res.status(200).json({
+            success: true,
+            message: `Started typing for ${duration}ms`
         });
     } catch (error) {
         console.error('Error setting typing state:', error);
@@ -581,35 +600,35 @@ app.post('/api/typing', async (req, res) => {
 app.post('/api/waha-webhook', async (req, res) => {
     try {
         const wahaEvent = req.body;
-        
+
         if (!wahaEvent || !wahaEvent.event) {
             return res.status(400).json({ success: false, error: 'Invalid event format' });
         }
-        
+
         // Process event based on type
         switch (wahaEvent.event) {
             case 'send_text':
                 if (wahaEvent.data && wahaEvent.data.chatId && wahaEvent.data.message) {
                     const result = await client.sendMessage(wahaEvent.data.chatId, wahaEvent.data.message);
-                    return res.status(200).json({ 
-                        success: true, 
+                    return res.status(200).json({
+                        success: true,
                         messageId: result.id._serialized,
-                        message: 'Message sent successfully' 
+                        message: 'Message sent successfully'
                     });
                 }
                 break;
-                
+
             case 'seen':
                 if (wahaEvent.data && wahaEvent.data.chatId) {
                     const chat = await client.getChatById(wahaEvent.data.chatId);
                     await chat.sendSeen();
-                    return res.status(200).json({ 
-                        success: true, 
-                        message: 'Chat marked as seen' 
+                    return res.status(200).json({
+                        success: true,
+                        message: 'Chat marked as seen'
                     });
                 }
                 break;
-                
+
             case 'typing':
                 if (wahaEvent.data && wahaEvent.data.chatId) {
                     const chat = await client.getChatById(wahaEvent.data.chatId);
@@ -618,17 +637,17 @@ app.post('/api/waha-webhook', async (req, res) => {
                     setTimeout(async () => {
                         await chat.clearState();
                     }, duration);
-                    return res.status(200).json({ 
-                        success: true, 
-                        message: `Started typing for ${duration}ms` 
+                    return res.status(200).json({
+                        success: true,
+                        message: `Started typing for ${duration}ms`
                     });
                 }
                 break;
-                
+
             default:
                 return res.status(400).json({ success: false, error: 'Unsupported event type' });
         }
-        
+
         return res.status(400).json({ success: false, error: 'Missing required data' });
     } catch (error) {
         console.error('Error processing waha webhook:', error);
@@ -644,4 +663,24 @@ app.listen(PORT, () => {
     console.log(`- POST http://localhost:${PORT}/api/seen - Mark a chat as seen`);
     console.log(`- POST http://localhost:${PORT}/api/typing - Start typing in a chat`);
     console.log(`- POST http://localhost:${PORT}/api/waha-webhook - Webhook endpoint for waha.devlike.pro`);
+});
+
+// Tratamento global de erros de promises não tratadas
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+
+    // Tente reconectar
+    if (reason && reason.message && reason.message.includes('Execution context was destroyed')) {
+        console.log('Tentando reconectar em 10 segundos...');
+        setTimeout(() => {
+            try {
+                console.log('Reiniciando cliente...');
+                client.initialize().catch(err => {
+                    console.error('Erro ao reiniciar cliente:', err);
+                });
+            } catch (e) {
+                console.error('Erro ao tentar reconectar:', e);
+            }
+        }, 10000);
+    }
 });
