@@ -157,6 +157,7 @@ async function sendWebhookEvent(eventType, data) {
                 if (webhookError.response) {
                     console.error(`Status: ${webhookError.response.status}, Data:`, webhookError.response.data);
                 }
+            }
         }
     } catch (error) {
         console.error('Error fetching webhooks or sending event:', error.message);
