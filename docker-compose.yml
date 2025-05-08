@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16
@@ -36,8 +34,9 @@ services:
       - "5000:5000"
       - "3001-3010:3001-3010"  # Portas para os bridges do WhatsApp
     volumes:
-      - ./.wwebjs_auth:/app/.wwebjs_auth  # Persistir sessões do WhatsApp
-      - ./.wwebjs_cache:/app/.wwebjs_cache
+      - whatsapp_auth:/app/.wwebjs_auth  # Persistir sessões do WhatsApp
+      - whatsapp_cache:/app/.wwebjs_cache
+      - whatsapp_media:/app/media
     networks:
       - whatsapp_net
     deploy:
@@ -53,3 +52,6 @@ networks:
 
 volumes:
   postgres_data:
+  whatsapp_auth:
+  whatsapp_cache:
+  whatsapp_media:

@@ -261,6 +261,155 @@ def send_text_message(session_id):
         logger.error(f"Error sending message: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
+# Marcar mensagem como vista (seen)
+@app.route('/api/sessions/<int:session_id>/seen', methods=['POST'])
+def mark_chat_as_seen(session_id):
+    session = WhatsAppSession.query.get_or_404(session_id)
+
+    # Verificar se a sessão está conectada
+    if session.status != 'connected':
+        return jsonify({"error": "WhatsApp session is not connected"}), 400
+
+    # Obter dados da requisição
+    data = request.json
+    if not data or not data.get('chatId'):
+        return jsonify({"error": "chatId is required"}), 400
+
+    try:
+        # Determinar a porta para o bridge do WhatsApp dessa sessão
+        bridge_port = 3000 + session_id
+
+        # Encaminhar a requisição para o bridge do WhatsApp
+        import urllib.request
+        import urllib.error
+        import json
+
+        req_data = json.dumps({
+            "chatId": data.get('chatId')
+        }).encode('utf-8')
+
+        req = urllib.request.Request(
+            f"http://localhost:{bridge_port}/api/seen",
+            data=req_data,
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+
+        try:
+            with urllib.request.urlopen(req, timeout=10) as response:
+                response_data = json.loads(response.read().decode('utf-8'))
+                logger.info(f"Chat {data.get('chatId')} marked as seen via session {session_id}")
+                return jsonify({"success": True, "message": "Chat marked as seen"})
+        except urllib.error.HTTPError as e:
+            error_message = e.read().decode('utf-8')
+            logger.error(f"Error marking chat as seen: {error_message}")
+            return jsonify({"error": f"Failed to mark chat as seen: {error_message}"}), e.code
+
+    except Exception as e:
+        logger.error(f"Error marking chat as seen: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/sessions/<int:session_id>/typing', methods=['POST'])
+def start_typing(session_id):
+    session = WhatsAppSession.query.get_or_404(session_id)
+    # Verificar se a sessão está conectada
+    if session.status != 'connected':
+        return jsonify({"error": "WhatsApp session is not connected"}), 400
+    # Obter dados da requisição
+    data = request.json
+    if not data or not data.get('chatId'):
+        return jsonify({"error": "chatId is required"}), 400
+    # Obter duração opcional da digitação (padrão: 3000ms)
+    duration = data.get('duration', 3000)
+    try:
+        # Determinar a porta para o bridge do WhatsApp dessa sessão
+        bridge_port = 3000 + session_id
+        # Encaminhar a requisição para o bridge do WhatsApp
+        import urllib.request
+        import urllib.error
+        import json
+        req_data = json.dumps({
+            "chatId": data.get('chatId'),
+            "duration": duration
+        }).encode('utf-8')
+        req = urllib.request.Request(
+            f"http://localhost:{bridge_port}/api/typing",
+            data=req_data,
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=30) as response:
+                response_data = json.loads(response.read().decode('utf-8'))
+                logger.info(f"Started typing in chat {data.get('chatId')} via session {session_id} for {duration}ms")
+                return jsonify({"success": True, "message": f"Started typing for {duration}ms"})
+        except urllib.error.HTTPError as e:
+            error_message = e.read().decode('utf-8')
+            logger.error(f"Error starting typing: {error_message}")
+            return jsonify({"error": f"Failed to start typing: {error_message}"}), e.code
+    except Exception as e:
+        logger.error(f"Error starting typing: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/sessions/<int:session_id>/send-image', methods=['POST'])
+def send_image_message(session_id):
+    session = WhatsAppSession.query.get_or_404(session_id)
+
+    # Verificar se a sessão está conectada
+    if session.status != 'connected':
+        return jsonify({"error": "WhatsApp session is not connected"}), 400
+
+    # Obter dados da requisição
+    data = request.json
+    if not data or not data.get('chatId'):
+        return jsonify({"error": "chatId is required"}), 400
+
+    # Verificar se há URL da imagem ou arquivo
+    if not data.get('imageUrl') and not data.get('imageBase64'):
+        return jsonify({"error": "imageUrl or imageBase64 is required"}), 400
+
+    try:
+        # Determinar a porta para o bridge do WhatsApp dessa sessão
+        bridge_port = 3000 + session_id
+
+        # Preparar dados para a requisição
+        req_data = {
+            "chatId": data.get('chatId'),
+            "caption": data.get('caption', '')  # Legenda opcional
+        }
+
+        # Adicionar a URL da imagem ou base64, dependendo do que foi fornecido
+        if data.get('imageUrl'):
+            req_data["imageUrl"] = data.get('imageUrl')
+        else:
+            req_data["imageBase64"] = data.get('imageBase64')
+
+        # Encaminhar a requisição para o bridge do WhatsApp
+        import urllib.request
+        import urllib.error
+        import json
+
+        req = urllib.request.Request(
+            f"http://localhost:{bridge_port}/api/send-image",
+            data=json.dumps(req_data).encode('utf-8'),
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+
+        try:
+            with urllib.request.urlopen(req, timeout=120) as response:
+                response_data = json.loads(response.read().decode('utf-8'))
+                logger.info(f"Image sent to {data.get('chatId')} via session {session_id}")
+                return jsonify({"success": True, "message": "Image sent successfully", "messageId": response_data.get('messageId')})
+        except urllib.error.HTTPError as e:
+            error_message = e.read().decode('utf-8')
+            logger.error(f"Error sending image: {error_message}")
+            return jsonify({"error": f"Failed to send image: {error_message}"}), e.code
+
+    except Exception as e:
+        logger.error(f"Error sending image: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
 # Endpoint de teste para listar rotas
 @app.route('/api/debug/routes')
 def list_routes():
@@ -272,3 +421,32 @@ def list_routes():
             "path": str(rule)
         })
     return jsonify(routes)
+
+# Rota para servir arquivos de mídia
+@app.route('/api/files/<session_name>/<filename>')
+def serve_media_file(session_name, filename):
+    import os
+    from flask import send_from_directory
+
+    # Extrair o ID da sessão do nome da sessão (session_1 -> 1)
+    try:
+        session_id = session_name.split('_')[-1]
+
+        # Verificar se a sessão existe
+        session = WhatsAppSession.query.get(session_id)
+        if not session:
+            return jsonify({"error": "Session not found"}), 404
+
+        # Caminho para o diretório de mídia
+        media_dir = os.path.join('/app/media', session_name)
+
+        # Verificar se o diretório existe
+        if not os.path.exists(media_dir):
+            os.makedirs(media_dir, exist_ok=True)
+            return jsonify({"error": "File not found"}), 404
+
+        # Enviar o arquivo
+        return send_from_directory(media_dir, filename)
+    except Exception as e:
+        logger.error(f"Error serving media file: {str(e)}")
+        return jsonify({"error": str(e)}), 500
