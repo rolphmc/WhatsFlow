@@ -64,4 +64,4 @@ EXPOSE 5000
 ENTRYPOINT ["docker-entrypoint.sh"]
 
 # Inicializar aplicação
-CMD ["gunicorn", "--timeout", "60", "--bind", "0.0.0.0:5000", "--reuse-port", "--reload", "main:app"]
+CMD ["gunicorn", "--timeout", "300", "--bind", "0.0.0.0:5000", "--reuse-port", "--reload", "--worker-class", "gthread", "--workers", "1", "--threads", "4", "main:app"]

@@ -354,50 +354,52 @@ def start_typing(session_id):
 @app.route('/api/sessions/<int:session_id>/send-image', methods=['POST'])
 def send_image_message(session_id):
     session = WhatsAppSession.query.get_or_404(session_id)
-
     # Verificar se a sessão está conectada
     if session.status != 'connected':
         return jsonify({"error": "WhatsApp session is not connected"}), 400
-
     # Obter dados da requisição
     data = request.json
     if not data or not data.get('chatId'):
         return jsonify({"error": "chatId is required"}), 400
-
     # Verificar se há URL da imagem ou arquivo
     if not data.get('imageUrl') and not data.get('imageBase64'):
         return jsonify({"error": "imageUrl or imageBase64 is required"}), 400
-
     try:
         # Determinar a porta para o bridge do WhatsApp dessa sessão
         bridge_port = 3000 + session_id
-
         # Preparar dados para a requisição
         req_data = {
             "chatId": data.get('chatId'),
             "caption": data.get('caption', '')  # Legenda opcional
         }
-
         # Adicionar a URL da imagem ou base64, dependendo do que foi fornecido
         if data.get('imageUrl'):
             req_data["imageUrl"] = data.get('imageUrl')
         else:
             req_data["imageBase64"] = data.get('imageBase64')
-
         # Encaminhar a requisição para o bridge do WhatsApp
         import urllib.request
         import urllib.error
         import json
+        import os
+        # Usar o endereço interno baseado no ambiente Docker ou usar localhost como fallback
+        api_host = os.environ.get('API_HOST', 'localhost')
+
+        # Se estamos rodando no Docker e API_HOST é definido como 'web', use 127.0.0.1 para chamadas entre processos
+        # Este é um caso especial para chamadas dentro do mesmo contêiner
+        host_address = '127.0.0.1' if api_host == 'web' else api_host
+
+        logger.info(f"Connecting to WhatsApp bridge at http://{host_address}:{bridge_port}/api/send-image")
 
         req = urllib.request.Request(
-            f"http://localhost:{bridge_port}/api/send-image",
+            f"http://{host_address}:{bridge_port}/api/send-image",
             data=json.dumps(req_data).encode('utf-8'),
             headers={"Content-Type": "application/json"},
             method="POST"
         )
-
         try:
-            with urllib.request.urlopen(req, timeout=120) as response:
+            # Aumentar timeout para 120 segundos
+            with urllib.request.urlopen(req, timeout=180) as response:
                 response_data = json.loads(response.read().decode('utf-8'))
                 logger.info(f"Image sent to {data.get('chatId')} via session {session_id}")
                 return jsonify({"success": True, "message": "Image sent successfully", "messageId": response_data.get('messageId')})
@@ -405,7 +407,12 @@ def send_image_message(session_id):
             error_message = e.read().decode('utf-8')
             logger.error(f"Error sending image: {error_message}")
             return jsonify({"error": f"Failed to send image: {error_message}"}), e.code
-
+        except urllib.error.URLError as e:
+            logger.error(f"Connection error: {str(e)}")
+            return jsonify({"error": f"Connection error: {str(e)}"}), 500
+        except TimeoutError:
+            logger.error("Request timed out")
+            return jsonify({"error": "Request timed out after 3 minutes. The image might still be processing."}), 504
     except Exception as e:
         logger.error(f"Error sending image: {str(e)}")
         return jsonify({"error": str(e)}), 500

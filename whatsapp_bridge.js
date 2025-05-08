@@ -74,7 +74,10 @@ async function updateSessionStatus(status, qrCode = null, sessionData = null) {
         if (qrCode) data.qr_code = qrCode;
         if (sessionData) data.session_data = sessionData;
 
-        await axios.post(`http://localhost:5000/api/sessions/${sessionId}/status`, data);
+        // Usar o host definido no ambiente ou 'web' do Docker
+        const apiHost = process.env.API_HOST || 'web';
+        const apiPort = process.env.API_PORT || '5000';
+        await axios.post(`http://${apiHost}:${apiPort}/api/sessions/${sessionId}/status`, data);
         console.log(`Session ${sessionId} status updated to ${status}`);
     } catch (error) {
         console.error('Error updating session status:', error.message);
@@ -119,7 +122,9 @@ async function downloadMessageMedia(message) {
 async function sendWebhookEvent(eventType, data) {
     try {
         // Fetch all webhooks for this session
-        const response = await axios.get('http://localhost:5000/api/webhooks');
+        const apiHost = process.env.API_HOST || 'web';
+        const apiPort = process.env.API_PORT || '5000';
+        const response = await axios.get(`http://${apiHost}:${apiPort}/api/webhooks`);
         const webhooks = response.data.filter(webhook =>
             webhook.session_id == sessionId &&
             webhook.is_active &&
@@ -190,12 +195,15 @@ async function sendWebhookEvent(eventType, data) {
                                 // Tentativa de download de mídia
                                 if (msg.downloadMedia) {
                                     // Obter URL base do servidor
-                                    const serverHost = webhook.url.includes('localhost') ?
-                                        'localhost:5000' : new URL(webhook.url).hostname;
+                                    const apiHost = process.env.API_HOST || 'web';
+                                    const apiPort = process.env.API_PORT || '5000';
 
+                                    // Determinar o host correto para o webhook
+                                    const serverHost = webhook.url.includes('localhost') ?
+                                        'localhost:5000' : webhook.url.includes('127.0.0.1') ?
+                                            '127.0.0.1:5000' : `${apiHost}:${apiPort}`;
                                     // Baixar e salvar mídia
                                     const mediaInfo = await downloadMessageMedia(msg);
-
                                     if (mediaInfo) {
                                         const mediaUrl = `http://${serverHost}${mediaInfo.url}`;
                                         wahaPayload.payload.media = {
@@ -680,14 +688,43 @@ app.post('/api/send-image', async (req, res) => {
         if (!client || client.info === undefined) {
             return res.status(500).json({ success: false, error: 'WhatsApp client not ready' });
         }
+
         let media;
         try {
             if (imageUrl) {
-                // Carregar mídia da URL
-                console.log(`Loading media from URL: ${imageUrl}`);
-                media = await MessageMedia.fromUrl(imageUrl);
+                console.log(`Original imageUrl: ${imageUrl}`);
+
+                // Processar URLs com localhost ou 127.0.0.1
+                let processedUrl = imageUrl;
+
+                // Substituir localhost ou 127.0.0.1 pelo nome do serviço Docker
+                if (imageUrl.includes('localhost:5000') || imageUrl.includes('127.0.0.1:5000')) {
+                    const apiHost = process.env.API_HOST || 'web';
+                    processedUrl = imageUrl.replace(/(localhost|127\.0\.0\.1):5000/g, `${apiHost}:5000`);
+                    console.log(`Modified URL for Docker network: ${processedUrl}`);
+                }
+
+                // Configurar opções de download com timeout maior
+                const mediaOptions = {
+                    unsafeMime: true,
+                    reqOptions: {
+                        timeout: 120000  // 120 segundos
+                    }
+                };
+
+                // Tentar carregar com a URL processada
+                try {
+                    console.log(`Loading media from processed URL: ${processedUrl}`);
+                    media = await MessageMedia.fromUrl(processedUrl, mediaOptions);
+                } catch (urlError) {
+                    console.error(`Error with processed URL: ${urlError.message}`);
+                    console.log('Falling back to original URL...');
+
+                    // Se falhar, tentar com a URL original como fallback
+                    media = await MessageMedia.fromUrl(imageUrl, mediaOptions);
+                }
             } else {
-                // Usar mídia base64 fornecida
+                // Código original para base64
                 console.log('Using provided base64 media');
                 const matches = imageBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
                 if (matches && matches.length === 3) {
@@ -699,16 +736,13 @@ app.post('/api/send-image', async (req, res) => {
                     media = new MessageMedia('image/jpeg', imageBase64);
                 }
             }
-
             // Verificar se a mídia foi carregada corretamente
             if (!media) {
                 throw new Error('Failed to load media');
             }
-
             // Enviar mensagem com mídia
             console.log(`Sending image to ${chatId} with caption: ${caption}`);
             const message = await client.sendMessage(chatId, media, { caption });
-
             console.log(`Image sent successfully, message ID: ${message.id._serialized}`);
             return res.status(200).json({
                 success: true,
