@@ -34,10 +34,12 @@ db.init_app(app)
 with app.app_context():
     # Make sure to import the models here or their tables won't be created
     import models  # noqa: F401
-    
+
     logger.info("Creating database tables...")
     db.create_all()
     logger.info("Database tables created successfully.")
 
-# Import routes after app is initialized to avoid circular imports
-from routes import *  # noqa: F401, E402
+def init_app():
+    """Inicializa a aplicação e registra as rotas"""
+    import routes  # noqa: F401, E402
+    return app
