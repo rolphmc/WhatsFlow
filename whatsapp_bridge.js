@@ -96,7 +96,31 @@ async function downloadMessageMedia(message) {
             return null;
         }
 
-        const fileExtension = media.mimetype.split('/')[1] || 'dat';
+        // Determinar a extensão de arquivo adequada com base no mimetype
+        let fileExtension;
+        let mimeType = media.mimetype;
+
+        if (mimeType.startsWith('image/')) {
+            fileExtension = mimeType.split('/')[1] || 'jpg';
+        } else if (mimeType.startsWith('audio/')) {
+            fileExtension = mimeType.split('/')[1] || 'mp3';
+            // Tratar caso especial para o formato opus
+            if (mimeType.includes('ogg') || mimeType.includes('opus')) {
+                fileExtension = 'opus';
+            }
+        } else if (mimeType.startsWith('video/')) {
+            fileExtension = mimeType.split('/')[1] || 'mp4';
+        } else if (mimeType === 'application/pdf') {
+            fileExtension = 'pdf';
+        } else if (mimeType === 'text/plain') {
+            fileExtension = 'txt';
+        } else if (mimeType.includes('msword') || mimeType.includes('document')) {
+            fileExtension = mimeType.includes('docx') ? 'docx' : 'doc';
+        } else {
+            // Usar a extensão da parte MIME ou 'dat' se não for reconhecido
+            fileExtension = mimeType.split('/')[1] || 'dat';
+        }
+
         const fileName = `${message.id._serialized}.${fileExtension}`;
         const filePath = path.join(mediaDir, fileName);
 
@@ -110,7 +134,8 @@ async function downloadMessageMedia(message) {
             path: filePath,
             url: `/api/files/session_${sessionId}/${fileName}`,
             filename: message.filename || fileName,
-            mimetype: media.mimetype
+            mimetype: media.mimetype,
+            fileType: fileExtension
         };
     } catch (error) {
         console.error('Error downloading media:', error);
@@ -431,7 +456,7 @@ client.on('typing', async (chatId, typing) => {
         // Also send to waha.devlike.pro if configured with a webhook for this event
         try {
             // Get webhook configured for waha
-            const response = await axios.get('http://localhost:5000/api/webhooks');
+            const response = await axios.get('http://web:5000/api/webhooks');
             const wahaWebhooks = response.data.filter(webhook =>
                 webhook.session_id == sessionId &&
                 webhook.is_active &&
@@ -493,7 +518,7 @@ client.on('chat_update', async (chat) => {
         // Also send to waha.devlike.pro if configured with a webhook for this event
         try {
             // Get webhook configured for waha
-            const response = await axios.get('http://localhost:5000/api/webhooks');
+            const response = await axios.get('http://web:5000/api/webhooks');
             const wahaWebhooks = response.data.filter(webhook =>
                 webhook.session_id == sessionId &&
                 webhook.is_active &&
@@ -688,43 +713,26 @@ app.post('/api/send-image', async (req, res) => {
         if (!client || client.info === undefined) {
             return res.status(500).json({ success: false, error: 'WhatsApp client not ready' });
         }
-
         let media;
         try {
             if (imageUrl) {
-                console.log(`Original imageUrl: ${imageUrl}`);
-
-                // Processar URLs com localhost ou 127.0.0.1
+                // Processar URLs que usam localhost ou 127.0.0.1
                 let processedUrl = imageUrl;
 
-                // Substituir localhost ou 127.0.0.1 pelo nome do serviço Docker
+                // Substituir localhost/127.0.0.1 pelo nome do serviço Docker
                 if (imageUrl.includes('localhost:5000') || imageUrl.includes('127.0.0.1:5000')) {
                     const apiHost = process.env.API_HOST || 'web';
                     processedUrl = imageUrl.replace(/(localhost|127\.0\.0\.1):5000/g, `${apiHost}:5000`);
                     console.log(`Modified URL for Docker network: ${processedUrl}`);
                 }
 
-                // Configurar opções de download com timeout maior
-                const mediaOptions = {
+                console.log(`Loading media from URL: ${processedUrl}`);
+                media = await MessageMedia.fromUrl(processedUrl, {
                     unsafeMime: true,
-                    reqOptions: {
-                        timeout: 120000  // 120 segundos
-                    }
-                };
-
-                // Tentar carregar com a URL processada
-                try {
-                    console.log(`Loading media from processed URL: ${processedUrl}`);
-                    media = await MessageMedia.fromUrl(processedUrl, mediaOptions);
-                } catch (urlError) {
-                    console.error(`Error with processed URL: ${urlError.message}`);
-                    console.log('Falling back to original URL...');
-
-                    // Se falhar, tentar com a URL original como fallback
-                    media = await MessageMedia.fromUrl(imageUrl, mediaOptions);
-                }
+                    reqOptions: { timeout: 120000 }
+                });
             } else {
-                // Código original para base64
+                // Usar mídia base64 fornecida
                 console.log('Using provided base64 media');
                 const matches = imageBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
                 if (matches && matches.length === 3) {
@@ -736,13 +744,16 @@ app.post('/api/send-image', async (req, res) => {
                     media = new MessageMedia('image/jpeg', imageBase64);
                 }
             }
+
             // Verificar se a mídia foi carregada corretamente
             if (!media) {
                 throw new Error('Failed to load media');
             }
+
             // Enviar mensagem com mídia
             console.log(`Sending image to ${chatId} with caption: ${caption}`);
             const message = await client.sendMessage(chatId, media, { caption });
+
             console.log(`Image sent successfully, message ID: ${message.id._serialized}`);
             return res.status(200).json({
                 success: true,
@@ -755,6 +766,172 @@ app.post('/api/send-image', async (req, res) => {
         }
     } catch (error) {
         console.error('Error sending image:', error);
+        return res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// API endpoint para envio de documentos (PDF, TXT, etc)
+app.post('/api/send-document', async (req, res) => {
+    try {
+        const { chatId, documentUrl, documentBase64, filename, caption = '' } = req.body;
+        if (!chatId) {
+            return res.status(400).json({ success: false, error: 'chatId is required' });
+        }
+        if (!documentUrl && !documentBase64) {
+            return res.status(400).json({ success: false, error: 'documentUrl or documentBase64 is required' });
+        }
+        if (!client || client.info === undefined) {
+            return res.status(500).json({ success: false, error: 'WhatsApp client not ready' });
+        }
+
+        let media;
+        try {
+            if (documentUrl) {
+                // Processar URLs que usam localhost ou 127.0.0.1
+                let processedUrl = documentUrl;
+
+                // Substituir localhost/127.0.0.1 pelo nome do serviço Docker
+                if (documentUrl.includes('localhost:5000') || documentUrl.includes('127.0.0.1:5000')) {
+                    const apiHost = process.env.API_HOST || 'web';
+                    processedUrl = documentUrl.replace(/(localhost|127\.0\.0\.1):5000/g, `${apiHost}:5000`);
+                    console.log(`Modified URL for Docker network: ${processedUrl}`);
+                }
+
+                console.log(`Loading document from URL: ${processedUrl}`);
+                media = await MessageMedia.fromUrl(processedUrl, {
+                    unsafeMime: true,
+                    reqOptions: { timeout: 120000 }
+                });
+
+                // Se um nome de arquivo foi fornecido, usá-lo
+                if (filename) {
+                    media.filename = filename;
+                }
+            } else {
+                // Usar mídia base64 fornecida
+                console.log('Using provided base64 document');
+                const matches = documentBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+                if (matches && matches.length === 3) {
+                    const type = matches[1];
+                    const data = matches[2];
+                    media = new MessageMedia(type, data, filename || 'document');
+                } else {
+                    // Se não estiver no formato data URL, tentar determinar o tipo
+                    let mimetype = 'application/octet-stream'; // tipo padrão
+
+                    // Se o nome do arquivo estiver disponível, tentar determinar o tipo
+                    if (filename) {
+                        if (filename.endsWith('.pdf')) mimetype = 'application/pdf';
+                        else if (filename.endsWith('.txt')) mimetype = 'text/plain';
+                        else if (filename.endsWith('.doc') || filename.endsWith('.docx')) mimetype = 'application/msword';
+                    }
+
+                    media = new MessageMedia(mimetype, documentBase64, filename || 'document');
+                }
+            }
+
+            // Verificar se a mídia foi carregada corretamente
+            if (!media) {
+                throw new Error('Failed to load document');
+            }
+
+            // Enviar documento com a opção sendMediaAsDocument true
+            console.log(`Sending document to ${chatId}${caption ? ' with caption: ' + caption : ''}`);
+            const message = await client.sendMessage(chatId, media, {
+                caption,
+                sendMediaAsDocument: true
+            });
+
+            console.log(`Document sent successfully, message ID: ${message.id._serialized}`);
+            return res.status(200).json({
+                success: true,
+                messageId: message.id._serialized,
+                message: 'Document sent successfully'
+            });
+        } catch (mediaError) {
+            console.error('Error processing document media:', mediaError);
+            return res.status(500).json({ success: false, error: `Media error: ${mediaError.message}` });
+        }
+    } catch (error) {
+        console.error('Error sending document:', error);
+        return res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// API endpoint para envio de áudio
+app.post('/api/send-audio', async (req, res) => {
+    try {
+        const { chatId, audioUrl, audioBase64, filename, caption = '', asVoiceMessage = true } = req.body;
+        if (!chatId) {
+            return res.status(400).json({ success: false, error: 'chatId is required' });
+        }
+        if (!audioUrl && !audioBase64) {
+            return res.status(400).json({ success: false, error: 'audioUrl or audioBase64 is required' });
+        }
+        if (!client || client.info === undefined) {
+            return res.status(500).json({ success: false, error: 'WhatsApp client not ready' });
+        }
+
+        let media;
+        try {
+            if (audioUrl) {
+                // Processar URLs que usam localhost ou 127.0.0.1
+                let processedUrl = audioUrl;
+
+                // Substituir localhost/127.0.0.1 pelo nome do serviço Docker
+                if (audioUrl.includes('localhost:5000') || audioUrl.includes('127.0.0.1:5000')) {
+                    const apiHost = process.env.API_HOST || 'web';
+                    processedUrl = audioUrl.replace(/(localhost|127\.0\.0\.1):5000/g, `${apiHost}:5000`);
+                    console.log(`Modified URL for Docker network: ${processedUrl}`);
+                }
+
+                console.log(`Loading audio from URL: ${processedUrl}`);
+                media = await MessageMedia.fromUrl(processedUrl, {
+                    unsafeMime: true,
+                    reqOptions: { timeout: 120000 }
+                });
+
+                // Se um nome de arquivo foi fornecido, usá-lo
+                if (filename) {
+                    media.filename = filename;
+                }
+            } else {
+                // Usar mídia base64 fornecida
+                console.log('Using provided base64 audio');
+                const matches = audioBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+                if (matches && matches.length === 3) {
+                    const type = matches[1];
+                    const data = matches[2];
+                    media = new MessageMedia(type, data, filename || 'audio');
+                } else {
+                    // Se não estiver no formato data URL
+                    media = new MessageMedia('audio/mp3', audioBase64, filename || 'audio');
+                }
+            }
+
+            // Verificar se a mídia foi carregada corretamente
+            if (!media) {
+                throw new Error('Failed to load audio');
+            }
+
+            // Enviar áudio, como mensagem de voz se asVoiceMessage for true
+            console.log(`Sending audio to ${chatId}${asVoiceMessage ? ' as voice message' : ''}`);
+            const message = await client.sendMessage(chatId, media, {
+                sendAudioAsVoice: asVoiceMessage
+            });
+
+            console.log(`Audio sent successfully, message ID: ${message.id._serialized}`);
+            return res.status(200).json({
+                success: true,
+                messageId: message.id._serialized,
+                message: 'Audio sent successfully'
+            });
+        } catch (mediaError) {
+            console.error('Error processing audio media:', mediaError);
+            return res.status(500).json({ success: false, error: `Media error: ${mediaError.message}` });
+        }
+    } catch (error) {
+        console.error('Error sending audio:', error);
         return res.status(500).json({ success: false, error: error.message });
     }
 });
