@@ -1,5 +1,7 @@
 #!/bin/bash
 set -e
+mkdir -p /app/media
+chmod 777 /app/media
 
 # Função para testar a conexão com o PostgreSQL
 function postgres_ready(){
@@ -26,14 +28,6 @@ until postgres_ready; do
 done
 
 echo "PostgreSQL está pronto - continuando..."
-
-# Inicializar o banco de dados (opcional)
-echo "Inicializando o banco de dados..."
-python -c "
-from app import app, db
-with app.app_context():
-    db.create_all()
-"
 
 # Executar o comando passado para o script
 echo "Iniciando a aplicação..."

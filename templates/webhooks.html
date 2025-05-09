@@ -59,7 +59,7 @@
                         <p>Usando webhooks, você pode conectar eventos do WhatsApp aos fluxos de trabalho do n8n:</p>
                         <ol>
                             <li>Crie um webhook no n8n com o nó de gatilho "Webhook"</li>
-                            <li>Copie a URL do webhook do n8n</li> 
+                            <li>Copie a URL do webhook do n8n</li>
                             <li>Crie um webhook aqui e cole a URL do n8n</li>
                             <li>Selecione os eventos do WhatsApp que deseja usar para acionar o fluxo de trabalho</li>
                         </ol>
@@ -109,7 +109,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Events to Trigger Webhook</label>
-                        
+
                         <!-- Eventos de mensagens padrão -->
                         <div class="mb-3">
                             <p class="mb-2"><strong>Eventos do WhatsApp:</strong></p>
@@ -261,7 +261,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Propriedades da mensagem para filtros -->
                         <div class="mb-3">
                             <p class="mb-2"><strong>Propriedades da Mensagem (wwebjs.dev/Message):</strong></p>
@@ -312,7 +312,7 @@
                                         </label>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Coluna 2: Estados e flags -->
                                 <div class="col-md-4">
                                     <h6 class="text-muted mb-2">Estados e Flags</h6>
@@ -359,7 +359,7 @@
                                         </label>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Coluna 3: Propriedades de mídia -->
                                 <div class="col-md-4">
                                     <h6 class="text-muted mb-2">Mídia e Conteúdo Especial</h6>
@@ -415,16 +415,16 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Endpoints de API para Integração n8n</label>
-                        
+
                         <div class="mb-2" id="create-api-endpoints-container">
                             <div class="alert alert-warning">
                                 Selecione uma sessão do WhatsApp para visualizar os endpoints de API disponíveis.
                             </div>
                         </div>
-                        
+
                         <div class="accordion" id="createEndpointExamples">
                             <div class="accordion-item">
                                 <h2 class="accordion-header" id="createHeadingSendText">
@@ -476,7 +476,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Headers personalizados foram removidos conforme solicitado -->
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" id="webhook-active" checked>
@@ -522,7 +522,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Events to Trigger Webhook</label>
-                        
+
                         <!-- Eventos de mensagens padrão -->
                         <div class="mb-3">
                             <p class="mb-2"><strong>Eventos do WhatsApp:</strong></p>
@@ -674,7 +674,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Propriedades da mensagem para filtros -->
                         <div class="mb-3">
                             <p class="mb-2"><strong>Propriedades da Mensagem (wwebjs.dev/Message):</strong></p>
@@ -725,7 +725,7 @@
                                         </label>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Coluna 2: Estados e flags -->
                                 <div class="col-md-4">
                                     <h6 class="text-muted mb-2">Estados e Flags</h6>
@@ -772,7 +772,7 @@
                                         </label>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Coluna 3: Propriedades de mídia -->
                                 <div class="col-md-4">
                                     <h6 class="text-muted mb-2">Mídia e Conteúdo Especial</h6>
@@ -828,15 +828,15 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Endpoints de API para Integração n8n</label>
-                        
+
                         <div class="mb-2" id="api-endpoints-container">
                             <div class="spinner-border spinner-border-sm me-2" role="status"></div>
                             Carregando endpoints de API...
                         </div>
-                        
+
                         <div class="accordion" id="endpointExamples">
                             <div class="accordion-item">
                                 <h2 class="accordion-header" id="headingSendText">
@@ -851,6 +851,81 @@
   "chatId": "5511999999999@c.us",
   "message": "Olá do n8n!"
 }</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="createHeadingSendImage">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#createCollapseSendImage" aria-expanded="false" aria-controls="createCollapseSendImage">
+                                        Exemplo de Envio de Imagem
+                                    </button>
+                                </h2>
+                                <div id="createCollapseSendImage" class="accordion-collapse collapse" aria-labelledby="createHeadingSendImage" data-bs-parent="#createEndpointExamples">
+                                    <div class="accordion-body">
+                                        <p>Para enviar uma imagem, faça uma requisição POST com este corpo JSON:</p>
+                                        <pre><code>{
+                            "chatId": "5511999999999@c.us",
+                            "imageUrl": "https://exemplo.com/imagem.jpg",
+                            "caption": "Legenda opcional para a imagem"
+                            }</code></pre>
+                                        <p>Você também pode enviar imagens usando base64:</p>
+                                        <pre><code>{
+                            "chatId": "5511999999999@c.us",
+                            "imageBase64": "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
+                            "caption": "Legenda opcional para a imagem"
+                            }</code></pre>
+                                        <p class="text-muted">Nota: caption é opcional</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="createHeadingSendDocument">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#createCollapseSendDocument" aria-expanded="false" aria-controls="createCollapseSendDocument">
+                                        Exemplo de Envio de Documento
+                                    </button>
+                                </h2>
+                                <div id="createCollapseSendDocument" class="accordion-collapse collapse" aria-labelledby="createHeadingSendDocument" data-bs-parent="#createEndpointExamples">
+                                    <div class="accordion-body">
+                                        <p>Para enviar um documento (PDF, DOC, TXT, etc), faça uma requisição POST com este corpo JSON:</p>
+                                        <pre><code>{
+                            "chatId": "5511999999999@c.us",
+                            "documentUrl": "https://exemplo.com/documento.pdf",
+                            "filename": "documento.pdf",
+                            "caption": "Relatório mensal"
+                            }</code></pre>
+                                        <p>Você também pode enviar documentos usando base64:</p>
+                                        <pre><code>{
+                            "chatId": "5511999999999@c.us",
+                            "documentBase64": "data:application/pdf;base64,JVBERi0xLjMKJ...",
+                            "filename": "documento.pdf",
+                            "caption": "Relatório mensal"
+                            }</code></pre>
+                                        <p class="text-muted">Nota: filename e caption são opcionais, mas recomendados para melhor experiência</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="createHeadingSendAudio">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#createCollapseSendAudio" aria-expanded="false" aria-controls="createCollapseSendAudio">
+                                        Exemplo de Envio de Áudio
+                                    </button>
+                                </h2>
+                                <div id="createCollapseSendAudio" class="accordion-collapse collapse" aria-labelledby="createHeadingSendAudio" data-bs-parent="#createEndpointExamples">
+                                    <div class="accordion-body">
+                                        <p>Para enviar um áudio como mensagem de voz, faça uma requisição POST com este corpo JSON:</p>
+                                        <pre><code>{
+                            "chatId": "5511999999999@c.us",
+                            "audioUrl": "https://exemplo.com/audio.mp3",
+                            "asVoiceMessage": true
+                            }</code></pre>
+                                        <p>Você também pode enviar áudios usando base64:</p>
+                                        <pre><code>{
+                            "chatId": "5511999999999@c.us",
+                            "audioBase64": "data:audio/mp3;base64,SUQzBAAAAAAAI1...",
+                            "filename": "mensagem_voz.mp3",
+                            "asVoiceMessage": true
+                            }</code></pre>
+                                        <p class="text-muted">Nota: asVoiceMessage é opcional (padrão: true)</p>
                                     </div>
                                 </div>
                             </div>

@@ -5,7 +5,7 @@
  * Usage: node whatsapp_bridge.js <session_id>
  */
 
-const { Client, LocalAuth } = require('whatsapp-web.js');
+const { Client, LocalAuth, MessageMedia} = require('whatsapp-web.js');
 const qrcode = require('qrcode');
 const axios = require('axios');
 const fs = require('fs');
@@ -27,6 +27,14 @@ if (!fs.existsSync(sessionDir)) {
     fs.mkdirSync(sessionDir, { recursive: true });
 }
 
+// Create media directory for storing message media files
+const mediaDir = path.join(__dirname, 'media', `session_${sessionId}`);
+if (!fs.existsSync(mediaDir)) {
+    fs.mkdirSync(mediaDir, { recursive: true });
+}
+
+
+
 // Initialize the WhatsApp client
 const client = new Client({
     authStrategy: new LocalAuth({
@@ -34,7 +42,7 @@ const client = new Client({
         dataPath: path.join(__dirname, '.wwebjs_auth')
     }),
     puppeteer: {
-        headless: true,
+        headless: "new",
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
@@ -55,12 +63,9 @@ const client = new Client({
             width: 1280,
             height: 720
         }
-    }
+    },
+    restartOnAuthFail: false
  });
-
- // Logs docker-compose logs web --tail=100inicialização do cliente
-console.log('Iniciando navegador Puppeteer...');
-console.log('Configurações do Puppeteer:', JSON.stringify(client.options.puppeteer, null, 2));
 
 // Function to update session status
 async function updateSessionStatus(status, qrCode = null, sessionData = null) {
@@ -69,10 +74,72 @@ async function updateSessionStatus(status, qrCode = null, sessionData = null) {
         if (qrCode) data.qr_code = qrCode;
         if (sessionData) data.session_data = sessionData;
 
-        await axios.post(`http://localhost:5000/api/sessions/${sessionId}/status`, data);
+        // Usar o host definido no ambiente ou 'web' do Docker
+        const apiHost = process.env.API_HOST || 'web';
+        const apiPort = process.env.API_PORT || '5000';
+        await axios.post(`http://${apiHost}:${apiPort}/api/sessions/${sessionId}/status`, data);
         console.log(`Session ${sessionId} status updated to ${status}`);
     } catch (error) {
         console.error('Error updating session status:', error.message);
+    }
+}
+
+// Function to download and save media from a message
+async function downloadMessageMedia(message) {
+    if (!message.hasMedia) return null;
+
+    try {
+        console.log(`Downloading media for message: ${message.id._serialized}`);
+        const media = await message.downloadMedia();
+        if (!media) {
+            console.log('No media content returned');
+            return null;
+        }
+
+        // Determinar a extensão de arquivo adequada com base no mimetype
+        let fileExtension;
+        let mimeType = media.mimetype;
+
+        if (mimeType.startsWith('image/')) {
+            fileExtension = mimeType.split('/')[1] || 'jpg';
+        } else if (mimeType.startsWith('audio/')) {
+            fileExtension = mimeType.split('/')[1] || 'mp3';
+            // Tratar caso especial para o formato opus
+            if (mimeType.includes('ogg') || mimeType.includes('opus')) {
+                fileExtension = 'opus';
+            }
+        } else if (mimeType.startsWith('video/')) {
+            fileExtension = mimeType.split('/')[1] || 'mp4';
+        } else if (mimeType === 'application/pdf') {
+            fileExtension = 'pdf';
+        } else if (mimeType === 'text/plain') {
+            fileExtension = 'txt';
+        } else if (mimeType.includes('msword') || mimeType.includes('document')) {
+            fileExtension = mimeType.includes('docx') ? 'docx' : 'doc';
+        } else {
+            // Usar a extensão da parte MIME ou 'dat' se não for reconhecido
+            fileExtension = mimeType.split('/')[1] || 'dat';
+        }
+
+        const fileName = `${message.id._serialized}.${fileExtension}`;
+        const filePath = path.join(mediaDir, fileName);
+
+        // Decodificar e salvar o arquivo
+        const buffer = Buffer.from(media.data, 'base64');
+        fs.writeFileSync(filePath, buffer);
+
+        console.log(`Media saved to ${filePath}`);
+
+        return {
+            path: filePath,
+            url: `/api/files/session_${sessionId}/${fileName}`,
+            filename: message.filename || fileName,
+            mimetype: media.mimetype,
+            fileType: fileExtension
+        };
+    } catch (error) {
+        console.error('Error downloading media:', error);
+        return null;
     }
 }
 
@@ -80,7 +147,9 @@ async function updateSessionStatus(status, qrCode = null, sessionData = null) {
 async function sendWebhookEvent(eventType, data) {
     try {
         // Fetch all webhooks for this session
-        const response = await axios.get('http://localhost:5000/api/webhooks');
+        const apiHost = process.env.API_HOST || 'web';
+        const apiPort = process.env.API_PORT || '5000';
+        const response = await axios.get(`http://${apiHost}:${apiPort}/api/webhooks`);
         const webhooks = response.data.filter(webhook =>
             webhook.session_id == sessionId &&
             webhook.is_active &&
@@ -96,83 +165,117 @@ async function sendWebhookEvent(eventType, data) {
 
         for (const webhook of webhooks) {
             try {
-                // Propriedades básicas que sempre devem estar presentes
-                let basicData = {};
+                // Gerar um ID de evento único
+                const eventId = `evt_${Date.now().toString(36)}${Math.random().toString(36).substr(2, 9)}`;
 
-                // Se for um dos eventos de mensagem, incluir apenas os campos selecionados
-                if (eventType === 'message' || eventType === 'message_create' || eventType === 'message_ack') {
-                    // Check if the original message object is available in the context
-                    const messageObj = data._messageObj || data.message || data;
-
-                    // Process additional message properties based on webhook configuration
-                    if (messageObj && typeof messageObj === 'object') {
-                        console.log(`Processing additional message properties for webhook ${webhook.id}`);
-
-                        // Map of msg_ prefixed event names to actual Message object properties
-                        const propMapping = {
-                            'msg_id': 'id',
-                            'msg_body': 'body',
-                            'msg_type': 'type',
-                            'msg_timestamp': 'timestamp',
-                            'msg_from': 'from',
-                            'msg_to': 'to',
-                            'msg_author': 'author',
-                            'msg_fromMe': 'fromMe',
-                            'msg_hasMedia': 'hasMedia',
-                            'msg_isForwarded': 'isForwarded',
-                            'msg_isStatus': 'isStatus',
-                            'msg_isStarred': 'isStarred',
-                            'msg_broadcast': 'broadcast',
-                            'msg_mentionedIds': 'mentionedIds',
-                            'msg_vCards': 'vCards',
-                            'msg_location': 'location',
-                            'msg_hasQuotedMsg': 'hasQuotedMsg',
-                            'msg_duration': 'duration',
-                            'msg_mimetype': 'mimetype',
-                            'msg_caption': 'caption',
-                            'msg_filename': 'filename',
-                            'msg_links': 'links'
-                        };
-
-                        // Add only selected properties to the processed data
-                        for (const [eventProp, msgProp] of Object.entries(propMapping)) {
-                            if (webhook.events.includes(eventProp) && messageObj[msgProp] !== undefined) {
-                                basicData[msgProp] = messageObj[msgProp];
-                            }
-                        }
-                    }
-                } else {
-                    // Para outros tipos de eventos, manter o payload original
-                    basicData = {...data};
-                }
-
-                // Prepare the event payload with processed data
-                const payload = {
-                    event: eventType,
-                    sessionId: parseInt(sessionId),
-                    timestamp: new Date().toISOString(),
-                    data: basicData
+                // Obter informações sobre o número do WhatsApp atual
+                let meInfo = {
+                    id: client.info ? client.info.wid._serialized : "unknown",
+                    pushName: client.info ? client.info.pushname : "WhatsFlow"
                 };
 
-                // Adicionar cabeçalhos da requisição apenas se a opção estiver selecionada
-                if (webhook.events.includes('include_headers')) {
-                    // Os headers devem ser incluídos como uma propriedade dentro do objeto data
-                    payload.data.headers = {
-                        'host': webhook.url.split('/')[2],
-                        'user-agent': 'axios/1.9.0',
-                        'content-type': 'application/json',
-                        'accept': 'application/json, text/plain, */*'
-                    };
+                // Formatar os dados no padrão WAHA
+                let wahaPayload = {
+                    id: eventId,
+                    event: eventType,
+                    session: `session_${sessionId}`,
+                    metadata: {},
+                    me: meInfo,
+                    payload: {},
+                    engine: "WEBJS",
+                    environment: {
+                        version: "2025.2.1",
+                        engine: "WEBJS",
+                        tier: "CORE",
+                        browser: "/usr/bin/chromium"
+                    }
+                };
+
+                // Processar diferentes tipos de eventos
+                switch (eventType) {
+                    case 'message':
+                    case 'message_create':
+                        // Obter a mensagem original
+                        const msg = data._messageObj || data;
+
+                        // Dados básicos da mensagem
+                        wahaPayload.payload = {
+                            id: msg.id && msg.id._serialized ? msg.id._serialized :
+                                 msg.id ? `${msg.id.fromMe}_${msg.id.remote}_${msg.id.id}` : data.id,
+                            timestamp: msg.timestamp || Math.floor(Date.now() / 1000),
+                            from: msg.from || data.from,
+                            fromMe: msg.fromMe || data.fromMe,
+                            to: msg.to || data.to,
+                            body: msg.body || data.body || "",
+                            hasMedia: msg.hasMedia || data.hasMedia || false,
+                            ack: msg.ack || 1,
+                            ackName: msg.ack ? ['ERROR', 'PENDING', 'RECEIVED', 'READ', 'PLAYED'][msg.ack] || 'UNKNOWN' : 'SERVER',
+                            vCards: msg.vCards || [],
+                            _data: msg._data || {}
+                        };
+
+                        // Adicionar campos de mídia se disponíveis
+                        if (wahaPayload.payload.hasMedia) {
+                            try {
+                                // Tentativa de download de mídia
+                                if (msg.downloadMedia) {
+                                    // Obter URL base do servidor
+                                    const apiHost = process.env.API_HOST || 'web';
+                                    const apiPort = process.env.API_PORT || '5000';
+
+                                    // Determinar o host correto para o webhook
+                                    const serverHost = webhook.url.includes('localhost') ?
+                                        'localhost:5000' : webhook.url.includes('127.0.0.1') ?
+                                            '127.0.0.1:5000' : `${apiHost}:${apiPort}`;
+                                    // Baixar e salvar mídia
+                                    const mediaInfo = await downloadMessageMedia(msg);
+                                    if (mediaInfo) {
+                                        const mediaUrl = `http://${serverHost}${mediaInfo.url}`;
+                                        wahaPayload.payload.media = {
+                                            url: mediaUrl,
+                                            filename: mediaInfo.filename,
+                                            mimetype: mediaInfo.mimetype
+                                        };
+                                        wahaPayload.payload.mediaUrl = mediaUrl;
+                                    }
+                                }
+                            } catch (mediaError) {
+                                console.error(`Error processing media:`, mediaError);
+                            }
+                        }
+                        break;
+
+                    case 'message_ack':
+                        // Dados de confirmação de leitura
+                        wahaPayload.payload = {
+                            id: data.id || "unknown",
+                            ack: data.ack,
+                            ackName: data.ackName,
+                            body: data.body || "",
+                            timestamp: Math.floor(Date.now() / 1000)
+                        };
+                        break;
+
+                    case 'qr':
+                        // Dados de QR code
+                        wahaPayload.payload = {
+                            qr: data.qr
+                        };
+                        break;
+
+                    default:
+                        // Para outros tipos de eventos
+                        wahaPayload.payload = {...data};
                 }
 
+                // Se o webhook tiver headers especiais, usá-los
                 const headers = webhook.headers || {};
-                const response = await axios.post(webhook.url, payload, { headers });
 
-                await axios.post(webhook.url, payload, { headers });
-                console.log(`Event ${eventType} sent to webhook ${webhook.id} (${webhook.name}) - Response: ${response.status}`);
+                // Enviar para o webhook
+                const webhookResponse = await axios.post(webhook.url, wahaPayload, { headers });
+                console.log(`Event ${eventType} sent to webhook ${webhook.id} (${webhook.name}) - Response: ${webhookResponse.status}`);
             } catch (webhookError) {
                 console.error(`Error sending to webhook ${webhook.id}:`, webhookError.message);
-                // Adicione mais detalhes do erro
                 if (webhookError.response) {
                     console.error(`Status: ${webhookError.response.status}, Data:`, webhookError.response.data);
                 }
@@ -266,6 +369,7 @@ client.on('message_create', async (message) => {
             from: message.from,
             to: message.to,
             fromMe: message.fromMe,
+            hasMedia: message.hasMedia,
             timestamp: message.timestamp,
             // Store the original message object to extract additional properties if needed
             _messageObj: message
@@ -352,7 +456,7 @@ client.on('typing', async (chatId, typing) => {
         // Also send to waha.devlike.pro if configured with a webhook for this event
         try {
             // Get webhook configured for waha
-            const response = await axios.get('http://localhost:5000/api/webhooks');
+            const response = await axios.get('http://web:5000/api/webhooks');
             const wahaWebhooks = response.data.filter(webhook =>
                 webhook.session_id == sessionId &&
                 webhook.is_active &&
@@ -414,7 +518,7 @@ client.on('chat_update', async (chat) => {
         // Also send to waha.devlike.pro if configured with a webhook for this event
         try {
             // Get webhook configured for waha
-            const response = await axios.get('http://localhost:5000/api/webhooks');
+            const response = await axios.get('http://web:5000/api/webhooks');
             const wahaWebhooks = response.data.filter(webhook =>
                 webhook.session_id == sessionId &&
                 webhook.is_active &&
@@ -592,6 +696,242 @@ app.post('/api/typing', async (req, res) => {
         });
     } catch (error) {
         console.error('Error setting typing state:', error);
+        return res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// API endpoint para envio de imagens
+app.post('/api/send-image', async (req, res) => {
+    try {
+        const { chatId, imageUrl, imageBase64, caption = '' } = req.body;
+        if (!chatId) {
+            return res.status(400).json({ success: false, error: 'chatId is required' });
+        }
+        if (!imageUrl && !imageBase64) {
+            return res.status(400).json({ success: false, error: 'imageUrl or imageBase64 is required' });
+        }
+        if (!client || client.info === undefined) {
+            return res.status(500).json({ success: false, error: 'WhatsApp client not ready' });
+        }
+        let media;
+        try {
+            if (imageUrl) {
+                // Processar URLs que usam localhost ou 127.0.0.1
+                let processedUrl = imageUrl;
+
+                // Substituir localhost/127.0.0.1 pelo nome do serviço Docker
+                if (imageUrl.includes('localhost:5000') || imageUrl.includes('127.0.0.1:5000')) {
+                    const apiHost = process.env.API_HOST || 'web';
+                    processedUrl = imageUrl.replace(/(localhost|127\.0\.0\.1):5000/g, `${apiHost}:5000`);
+                    console.log(`Modified URL for Docker network: ${processedUrl}`);
+                }
+
+                console.log(`Loading media from URL: ${processedUrl}`);
+                media = await MessageMedia.fromUrl(processedUrl, {
+                    unsafeMime: true,
+                    reqOptions: { timeout: 120000 }
+                });
+            } else {
+                // Usar mídia base64 fornecida
+                console.log('Using provided base64 media');
+                const matches = imageBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+                if (matches && matches.length === 3) {
+                    const type = matches[1];
+                    const data = matches[2];
+                    media = new MessageMedia(type, data);
+                } else {
+                    // Tenta usar diretamente se não estiver no formato data URL
+                    media = new MessageMedia('image/jpeg', imageBase64);
+                }
+            }
+
+            // Verificar se a mídia foi carregada corretamente
+            if (!media) {
+                throw new Error('Failed to load media');
+            }
+
+            // Enviar mensagem com mídia
+            console.log(`Sending image to ${chatId} with caption: ${caption}`);
+            const message = await client.sendMessage(chatId, media, { caption });
+
+            console.log(`Image sent successfully, message ID: ${message.id._serialized}`);
+            return res.status(200).json({
+                success: true,
+                messageId: message.id._serialized,
+                message: 'Image sent successfully'
+            });
+        } catch (mediaError) {
+            console.error('Error processing media:', mediaError);
+            return res.status(500).json({ success: false, error: `Media error: ${mediaError.message}` });
+        }
+    } catch (error) {
+        console.error('Error sending image:', error);
+        return res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// API endpoint para envio de documentos (PDF, TXT, etc)
+app.post('/api/send-document', async (req, res) => {
+    try {
+        const { chatId, documentUrl, documentBase64, filename, caption = '' } = req.body;
+        if (!chatId) {
+            return res.status(400).json({ success: false, error: 'chatId is required' });
+        }
+        if (!documentUrl && !documentBase64) {
+            return res.status(400).json({ success: false, error: 'documentUrl or documentBase64 is required' });
+        }
+        if (!client || client.info === undefined) {
+            return res.status(500).json({ success: false, error: 'WhatsApp client not ready' });
+        }
+
+        let media;
+        try {
+            if (documentUrl) {
+                // Processar URLs que usam localhost ou 127.0.0.1
+                let processedUrl = documentUrl;
+
+                // Substituir localhost/127.0.0.1 pelo nome do serviço Docker
+                if (documentUrl.includes('localhost:5000') || documentUrl.includes('127.0.0.1:5000')) {
+                    const apiHost = process.env.API_HOST || 'web';
+                    processedUrl = documentUrl.replace(/(localhost|127\.0\.0\.1):5000/g, `${apiHost}:5000`);
+                    console.log(`Modified URL for Docker network: ${processedUrl}`);
+                }
+
+                console.log(`Loading document from URL: ${processedUrl}`);
+                media = await MessageMedia.fromUrl(processedUrl, {
+                    unsafeMime: true,
+                    reqOptions: { timeout: 120000 }
+                });
+
+                // Se um nome de arquivo foi fornecido, usá-lo
+                if (filename) {
+                    media.filename = filename;
+                }
+            } else {
+                // Usar mídia base64 fornecida
+                console.log('Using provided base64 document');
+                const matches = documentBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+                if (matches && matches.length === 3) {
+                    const type = matches[1];
+                    const data = matches[2];
+                    media = new MessageMedia(type, data, filename || 'document');
+                } else {
+                    // Se não estiver no formato data URL, tentar determinar o tipo
+                    let mimetype = 'application/octet-stream'; // tipo padrão
+
+                    // Se o nome do arquivo estiver disponível, tentar determinar o tipo
+                    if (filename) {
+                        if (filename.endsWith('.pdf')) mimetype = 'application/pdf';
+                        else if (filename.endsWith('.txt')) mimetype = 'text/plain';
+                        else if (filename.endsWith('.doc') || filename.endsWith('.docx')) mimetype = 'application/msword';
+                    }
+
+                    media = new MessageMedia(mimetype, documentBase64, filename || 'document');
+                }
+            }
+
+            // Verificar se a mídia foi carregada corretamente
+            if (!media) {
+                throw new Error('Failed to load document');
+            }
+
+            // Enviar documento com a opção sendMediaAsDocument true
+            console.log(`Sending document to ${chatId}${caption ? ' with caption: ' + caption : ''}`);
+            const message = await client.sendMessage(chatId, media, {
+                caption,
+                sendMediaAsDocument: true
+            });
+
+            console.log(`Document sent successfully, message ID: ${message.id._serialized}`);
+            return res.status(200).json({
+                success: true,
+                messageId: message.id._serialized,
+                message: 'Document sent successfully'
+            });
+        } catch (mediaError) {
+            console.error('Error processing document media:', mediaError);
+            return res.status(500).json({ success: false, error: `Media error: ${mediaError.message}` });
+        }
+    } catch (error) {
+        console.error('Error sending document:', error);
+        return res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// API endpoint para envio de áudio
+app.post('/api/send-audio', async (req, res) => {
+    try {
+        const { chatId, audioUrl, audioBase64, filename, caption = '', asVoiceMessage = true } = req.body;
+        if (!chatId) {
+            return res.status(400).json({ success: false, error: 'chatId is required' });
+        }
+        if (!audioUrl && !audioBase64) {
+            return res.status(400).json({ success: false, error: 'audioUrl or audioBase64 is required' });
+        }
+        if (!client || client.info === undefined) {
+            return res.status(500).json({ success: false, error: 'WhatsApp client not ready' });
+        }
+
+        let media;
+        try {
+            if (audioUrl) {
+                // Processar URLs que usam localhost ou 127.0.0.1
+                let processedUrl = audioUrl;
+
+                // Substituir localhost/127.0.0.1 pelo nome do serviço Docker
+                if (audioUrl.includes('localhost:5000') || audioUrl.includes('127.0.0.1:5000')) {
+                    const apiHost = process.env.API_HOST || 'web';
+                    processedUrl = audioUrl.replace(/(localhost|127\.0\.0\.1):5000/g, `${apiHost}:5000`);
+                    console.log(`Modified URL for Docker network: ${processedUrl}`);
+                }
+
+                console.log(`Loading audio from URL: ${processedUrl}`);
+                media = await MessageMedia.fromUrl(processedUrl, {
+                    unsafeMime: true,
+                    reqOptions: { timeout: 120000 }
+                });
+
+                // Se um nome de arquivo foi fornecido, usá-lo
+                if (filename) {
+                    media.filename = filename;
+                }
+            } else {
+                // Usar mídia base64 fornecida
+                console.log('Using provided base64 audio');
+                const matches = audioBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+                if (matches && matches.length === 3) {
+                    const type = matches[1];
+                    const data = matches[2];
+                    media = new MessageMedia(type, data, filename || 'audio');
+                } else {
+                    // Se não estiver no formato data URL
+                    media = new MessageMedia('audio/mp3', audioBase64, filename || 'audio');
+                }
+            }
+
+            // Verificar se a mídia foi carregada corretamente
+            if (!media) {
+                throw new Error('Failed to load audio');
+            }
+
+            // Enviar áudio, como mensagem de voz se asVoiceMessage for true
+            console.log(`Sending audio to ${chatId}${asVoiceMessage ? ' as voice message' : ''}`);
+            const message = await client.sendMessage(chatId, media, {
+                sendAudioAsVoice: asVoiceMessage
+            });
+
+            console.log(`Audio sent successfully, message ID: ${message.id._serialized}`);
+            return res.status(200).json({
+                success: true,
+                messageId: message.id._serialized,
+                message: 'Audio sent successfully'
+            });
+        } catch (mediaError) {
+            console.error('Error processing audio media:', mediaError);
+            return res.status(500).json({ success: false, error: `Media error: ${mediaError.message}` });
+        }
+    } catch (error) {
+        console.error('Error sending audio:', error);
         return res.status(500).json({ success: false, error: error.message });
     }
 });
